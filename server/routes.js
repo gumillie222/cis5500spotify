@@ -8,41 +8,30 @@ var connection = mysql.createPool(config);
 /* ------------------- Route Handlers --------------- */
 /* -------------------------------------------------- */
 
-/* ---- (Dashboard) ---- */
-function getAllPeople(req, res) {
-  var query = `
-    SELECT login, name, birthyear
-    FROM Person;
-  `;
-  connection.query(query, function (err, rows, fields) {
-    if (err) console.log(err);
-    else {
-      res.json(rows);
+// get /top_cities
+const topCities = async function(req, res) {
+  const limit = parseInt(req.query.limit);
+  if (isNaN(limit) || limit < 1) {
+    return res.status(400).send('Invalid limit parameter');
+  }
+  connection.query(`
+  SELECT c.city
+  FROM Concert c
+  INNER JOIN Chart ch ON c.title LIKE CONCAT('%', ch.artist, '%')
+  GROUP BY c.city
+  ORDER BY COUNT(*) DESC
+  LIMIT ${limit}
+`, (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.json({});
+    } else {
+      res.json(data);
     }
   });
-};
-
-/* ---- Part 2 (FindFriends) ---- */
-function getFriends(req, res) {
-  var inputLogin = req.params.login;
-
-  console.log("input received:" + inputLogin);
-
-  // TODO: (3) - Edit query below
-  var query = `
-    <INSERT QUERY HERE, using inputLogin>;
-  `;
-  connection.query(query, function (err, rows, fields) {
-    if (err) console.log(err);
-    else {
-      console.log(rows);
-      res.json(rows);
-    }
-  });
-};
+}
 
 // The exported functions, which can be accessed in index.js.
 module.exports = {
-  getAllPeople: getAllPeople,
-  getFriends: getFriends
+  topCities
 }

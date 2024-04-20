@@ -4,5 +4,5 @@ module.exports = {
   port: "3306",
   user : "admin",
   password: "spotbnbCIS5500!",
-  database: "final-project"
+  database: "SPOTBNB"
 };

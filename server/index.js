@@ -13,10 +13,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 /* ------------------- Route handler registration ----------------- */
 /* ---------------------------------------------------------------- */
 
-/* ---- (Dashboard) ---- */
-// The route localhost:8081/people is registered to the function
-// routes.getAllPeople, specified in routes.js.
-app.get('/people', routes.getAllPeople);
+/* ---- (top cities) ---- */
+app.get('/top-cities', routes.topCities);
 
 /* ---- Part 2 (FindFriends) ---- */
 // TODO: (2) - Add route '/friends/:login' for the functionality of FindFriends page 
