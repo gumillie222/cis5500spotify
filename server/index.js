@@ -14,7 +14,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 /* ---------------------------------------------------------------- */
 
 /* ---- (top cities) ---- */
-app.get('/top-cities', routes.topCities);
+app.get('/top_cities', routes.topCities);
+
+app.get('/top_artists', routes.topArtists);
+
+app.get('/hello', routes.hello);
 
 /* ---- Part 2 (FindFriends) ---- */
 // TODO: (2) - Add route '/friends/:login' for the functionality of FindFriends page 
