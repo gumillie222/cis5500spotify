@@ -87,7 +87,7 @@ const getAirbnb = async function(req, res) {
     ON c.title LIKE CONCAT('%', ch.artist,'%')
   WHERE a.price <= ${priceMax} AND a.price >= ${priceMin}
     AND a.number_of_reviews >= ${numReviews}
-    AND ch.chart_rank <= 5
+    AND ch.chart_rank <= ${chartRank}
   ORDER BY a.price DESC, c.city;
   
 `, (err, data) => {
