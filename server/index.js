@@ -16,6 +16,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 /* ---- (top cities) ---- */
 app.get('/top-cities', routes.topCities);
 
+
+/* ---- (top cities) ---- */
+app.get('/airbnb', routes.getAirbnb);
+
+
 /* ---- Part 2 (FindFriends) ---- */
 // TODO: (2) - Add route '/friends/:login' for the functionality of FindFriends page 
 app.get('/friends/:login', () => { }); // Hint: Replace () => {} with the appropriate route handler in routes.js.

@@ -31,7 +31,42 @@ const topCities = async function(req, res) {
   });
 }
 
+
+
+// get /airbnb
+const getAirbnb = async function(req, res) {
+  const priceMin = parseInt(req.query.price_min) ?? 0;
+  const priceMax = parseInt(req.query.price_max);
+  const numReviews = parseInt(req.query.num_reviews) ?? 0;
+  const chartRank = parseInt(req.query.chart_rank);
+  if (isNaN(priceMax) || isNaN(chartRank)) {
+    return res.status(400).send('Invalid limit parameter');
+  }
+  connection.query(`
+  SELECT DISTINCT *
+  FROM Airbnb a
+  JOIN Concert c
+    ON a.city = c.city
+  JOIN Chart_small ch
+    ON c.title LIKE CONCAT('%', ch.artist,'%')
+  WHERE a.price <= ${priceMax} AND a.price >= ${priceMin}
+    AND a.number_of_reviews >= ${numReviews}
+    AND ch.chart_rank <= 5
+  ORDER BY a.price DESC, c.city;
+  
+`, (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.json({});
+    } else {
+      res.json(data);
+    }
+  });
+}
+
+
 // The exported functions, which can be accessed in index.js.
 module.exports = {
-  topCities
+  topCities,
+  getAirbnb
 }
