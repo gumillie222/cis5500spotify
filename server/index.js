@@ -14,7 +14,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 /* ---------------------------------------------------------------- */
 
 /* ---- (top cities) ---- */
-app.get('/top-cities', routes.topCities);
+app.get('/top_cities', routes.topCities);
+
+app.get('/top_artists', routes.topArtists);
+
+app.get('/hello', routes.hello);
 
 
 /* ---- (top cities) ---- */
