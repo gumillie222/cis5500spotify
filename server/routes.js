@@ -70,13 +70,14 @@ LIMIT ${limit}
 
 // get /airbnb
 const getAirbnb = async function(req, res) {
-  const priceMin = parseInt(req.query.price_min) ?? 0;
+  const priceMin = parseInt(req.query.price_min);
   const priceMax = parseInt(req.query.price_max);
-  const numReviews = parseInt(req.query.num_reviews) ?? 0;
+  const numReviews = parseInt(req.query.num_reviews);
   const chartRank = parseInt(req.query.chart_rank);
-  if (isNaN(priceMax) || isNaN(chartRank)) {
+  if (isNaN(priceMin) || isNaN(priceMax) || 
+  isNaN(numReviews) || isNaN(chartRank)) {
     return res.status(400).send('Invalid limit parameter');
-  }
+  } // we need to change this later, set default values or smth
   connection.query(`
   SELECT DISTINCT *
   FROM Airbnb a
@@ -86,7 +87,7 @@ const getAirbnb = async function(req, res) {
     ON c.title LIKE CONCAT('%', ch.artist,'%')
   WHERE a.price <= ${priceMax} AND a.price >= ${priceMin}
     AND a.number_of_reviews >= ${numReviews}
-    AND ch.chart_rank <= 5
+    AND ch.chart_rank <= ${chartRank}
   ORDER BY a.price DESC, c.city;
   
 `, (err, data) => {
