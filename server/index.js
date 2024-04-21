@@ -18,6 +18,8 @@ app.get('/top_cities', routes.topCities);
 
 app.get('/top_artists', routes.topArtists);
 
+app.get('/subcategories', routes.getSubcategories);
+
 app.get('/hello', routes.hello);
 
 
