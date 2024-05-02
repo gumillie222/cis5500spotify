@@ -4,6 +4,13 @@ var mysql = require('mysql');
 config.connectionLimit = 10;
 var connection = mysql.createPool(config);
 
+// First, create the index
+connection.query('CREATE INDEX idx_chart_rank ON Chart_small(chart_rank);', (err, result) => {
+  if (err) {
+    console.error('Error creating index:', err);
+    return;
+  }
+  console.log('Index created successfully')});
 /* -------------------------------------------------- */
 /* ------------------- Route Handlers --------------- */
 /* -------------------------------------------------- */
@@ -79,6 +86,7 @@ const getAirbnb = async function(req, res) {
     return res.status(400).send('Invalid limit parameter');
   } // we need to change this later, set default values or smth
   connection.query(`
+  CREATE INDEX idx_chart_rank ON Chart_small(chart_rank);
   SELECT DISTINCT *
   FROM Airbnb a
   JOIN Concert c
