@@ -4,6 +4,40 @@ var mysql = require('mysql');
 config.connectionLimit = 10;
 var connection = mysql.createPool(config);
 
+const { searchSpotifyForArtistByTitle } = require('./spotify-auth');
+
+// First, create the index
+/*connection.query('CREATE INDEX idx_chart_rank ON Chart_small(chart_rank);', (err, result) => {
+  if (err) {
+    console.error('Error creating index:', err);
+    return;
+  }
+  console.log('Index created successfully')});*/
+
+// Create a new column on concert to contain the artist name
+connection.query('ALTER TABLE Concert ADD COLUMN artist VARCHAR(255);')
+connection.query(`SELECT title FROM Concert 
+                WHERE artist IS NULL AND event_category = "MUSIC"`, async (err, results) => {
+  if (err) {
+    console.error('Error fetching titles:', err);
+    return;
+  }
+  for (let result of results) {
+    const artistName = await searchSpotifyForArtistByTitle(result.title);
+    if (artistName) {
+      connection.query(`
+        UPDATE Concert SET artist = ? WHERE title = ?
+        `, [artistName, result.title], (err, updateResults) => {
+        if (err) {
+          console.error('Error updating artist:', err);
+        } else {
+          console.log(`Updated artist for title ${result.title}: ${artistName}`);
+        }
+      });
+    }
+  }
+});
+
 /* -------------------------------------------------- */
 /* ------------------- Route Handlers --------------- */
 /* -------------------------------------------------- */
@@ -44,7 +78,43 @@ const topCities = async function (req, res) {
     }
   });
 }
+/*
+// get /top_cities
+const topCities = async function (req, res) {
+  const limit = parseInt(req.query.limit);
+  if (isNaN(limit) || limit < 1) {
+    return res.status(400).send('Invalid limit parameter');
+  }
 
+  try {
+    // Suppose you have an artist name in query params
+    const artist = await searchSpotifyForArtist(req.query.artist);
+    if (!artist) {
+      return res.status(404).send('Artist not found');
+    }
+
+    connection.query(`
+      SELECT c.city
+      FROM Concert c
+      WHERE c.artist_id = ?
+      GROUP BY c.city
+      ORDER BY COUNT(*) DESC
+      LIMIT ?
+    `, [artist.id, limit], (err, data) => {
+      if (err || data.length === 0) {
+        console.error(err);
+        res.json({});
+      } else {
+        res.json(data);
+      }
+    });
+
+  } catch (error) {
+    console.error('Failed to search for artist:', error);
+    res.status(500).send('Internal server error');
+  }
+};
+*/
 
 // get /top_artists - WORKS
 const topArtists = async function (req, res) {
@@ -85,6 +155,7 @@ const getAirbnb = async function (req, res) {
     return res.status(400).send('Invalid max or rank parameter');
   }
   connection.query(`
+  CREATE INDEX idx_chart_rank ON Chart_small(chart_rank);
   SELECT DISTINCT *
   FROM Airbnb a
   JOIN Concert c
