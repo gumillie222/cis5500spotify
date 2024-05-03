@@ -16,7 +16,8 @@ const { searchSpotifyForArtistByTitle } = require('./spotify-auth');
 
 // Create a new column on concert to contain the artist name
 connection.query('ALTER TABLE Concert ADD COLUMN artist VARCHAR(255);')
-connection.query('SELECT title FROM Concert', async (err, results) => {
+connection.query(`SELECT title FROM Concert 
+                WHERE artist IS NULL AND event_category = "MUSIC"`, async (err, results) => {
   if (err) {
     console.error('Error fetching titles:', err);
     return;
@@ -24,7 +25,9 @@ connection.query('SELECT title FROM Concert', async (err, results) => {
   for (let result of results) {
     const artistName = await searchSpotifyForArtistByTitle(result.title);
     if (artistName) {
-      connection.query('UPDATE Concert SET artist = ? WHERE title = ? AND artist = null AND event_category = "MUSIC"', [artistName, result.title], (err, updateResults) => {
+      connection.query(`
+        UPDATE Concert SET artist = ? WHERE title = ?
+        `, [artistName, result.title], (err, updateResults) => {
         if (err) {
           console.error('Error updating artist:', err);
         } else {
