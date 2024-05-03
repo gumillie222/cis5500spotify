@@ -9,7 +9,7 @@ var connection = mysql.createPool(config);
 /* -------------------------------------------------- */
 
 
-// connection.query('CREATE INDEX chart_rank_idx ON Chart_small(chart_rank);', (err, result) => {
+// connection.query('CREATE INDEX idx_chart_artist ON Chart(artist);', (err, result) => {
 //   if (err) {
 //     console.error('Error creating index:', err);
 //     return;
@@ -74,35 +74,36 @@ const topArtists = async function (req, res) {
   });
 }
 
-
-// get /airbnb -- NEED TO CHECK AGAIN, COULDN'T RUN
+// get /airbnb -- NEED TO CHECK, COULDN'T RUN
 const getAirbnb = async function (req, res) {
+
   const priceMin = parseInt(req.query.price_min) || 0;
-  const priceMax = parseInt(req.query.price_max);
+  const priceMax = parseInt(req.query.price_max) || 2000;
   const numReviews = parseInt(req.query.num_reviews) || 0;
-  const chartRank = parseInt(req.query.chart_rank);
-  if (isNaN(priceMax) || isNaN(chartRank)) {
-    return res.status(400).send('Invalid max or rank parameter');
-  }
-  connection.query(`
-  SELECT DISTINCT *
-  FROM Airbnb a
-  JOIN Concert c
-    ON a.city = c.city
-  JOIN Chart_small ch
-    ON c.title LIKE CONCAT('%', ch.artist,'%')
-  WHERE a.price <= 10000 AND a.price >= 0
-    AND a.number_of_reviews >= 0
-    AND ch.chart_rank <= 5
-  ORDER BY a.price DESC, c.city;
-  
-`, (err, data) => {
-    if (err || data.length === 0) {
+  const chartRank = parseInt(req.query.chart_rank) || 5;
+
+  const query = `
+    SELECT DISTINCT *
+    FROM Airbnb a
+    JOIN Concert c
+      ON a.city = c.city
+    JOIN Chart ch
+      ON ch.artist = c.title
+    WHERE a.price <= ? AND a.price >= ?
+      AND a.number_of_reviews >= ?
+      AND ch.chart_rank <= ?
+    ORDER BY a.price DESC, c.city;
+  `;
+
+  connection.query(query, [priceMax, priceMin, numReviews, chartRank], (err, data) => {
+    if (err) {
       console.log(err);
-      res.json({});
-    } else {
-      res.json(data);
+      return res.status(500).json({ error: "Internal server error" });
     }
+    if (data.length === 0) {
+      return res.status(404).json({ message: "No data found for the given parameters." });
+    }
+    res.status(200).json(data);
   });
 }
 
