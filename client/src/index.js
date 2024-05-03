@@ -1,6 +1,27 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './components/App';
+import ReactDOM from 'react-dom/client';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+import Map from './Map';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Concert from './Concert';
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path='/' exact element={<Map />} />
+        <Route path='/concert/:concertId' element={<Concert />} />
+        
+      </Routes>
+      
+    </Router>
+    
+    
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <App />
+);
+
