@@ -13,6 +13,7 @@ import CitiesConcerts from './Components/GetCitiesConcerts';
 import MonthPopularity from './Components/GetMonthPopularity';
 import EventsAccomodations from './Components/GetEventsAccomodations';
 import MostImproved from './Components/GetMostImproved';
+import {useNavigate} from "react-router-dom";
 
 const SearchAndAutoFetch = () => {
     const [autoFetchedData, setAutoFetchedData] = useState(null);
@@ -53,9 +54,17 @@ const SearchAndAutoFetch = () => {
         setResults(res.data);
     };
 
+    const navigate = useNavigate();
+    const handleClick = () => {
+        navigate('/');
+    }
+
+    
+
     return (
         <div>
             <h1>SPOTBNB Queries</h1>
+            <Button onClick={handleClick} >Map</Button>
 
 
             {/* Display automatically fetched data */}

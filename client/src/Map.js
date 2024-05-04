@@ -8,40 +8,14 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import GoogleMapReact from 'google-map-react';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import axios from "axios"
-import {
-    setKey,
-    setDefaults,
-    setLanguage,
-    setRegion,
-    fromAddress,
-    fromLatLng,
-    fromPlaceId,
-    setLocationType,
-    geocode,
-    RequestType,
-  } from "react-geocode";
-
-  
-
-  setDefaults({
-    key: "AIzaSyD6r04ZkeNnUTBfktdJgpFR6Y7etnhXCsQ", // Your API key here.
-    language: "en", // Default language for responses.
-    region: "es", // Default region for responses.
-  });
-
-  fromAddress("Eiffel Tower")
-  .then(({ results }) => {
-    const { lat, lng } = results[0].geometry.location;
-    console.log(lat, lng);
-  })
-  .catch(console.error);
+import { withRouter } from './withRouter';
 
 
-export default class Map extends React.Component {
+class Map extends React.Component {
 
 
     constructor(props) {
-        super();
+        super(props);
         const res = axios.get("http://localhost:8081/latitudelongitude")
         this.state = {
             latitude: 39.952305,
@@ -52,6 +26,11 @@ export default class Map extends React.Component {
             searchText: "",
         }
     }
+
+    handleSearchBarNavigate = () => {
+        this.props.navigate('/SearchBar');
+    };
+    
 
    handlePinClick = (concert) => {
         // Toggle: if the same concert is clicked again, close its details; otherwise, open the clicked concert's details.
@@ -138,7 +117,7 @@ export default class Map extends React.Component {
                     style={{ width: "100%"}}
                     onChange={(event) => {this.setState({ searchText: event.target.value })}}
                 />
-                <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItem: "center"}}>
+                {/* <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItem: "center"}}>
                     <Typography>
                         Distance: 
                     </Typography>
@@ -153,6 +132,16 @@ export default class Map extends React.Component {
                     
                     
                     />
+                </div> */}
+                <div>
+                        <Button variant="contained"
+                                onClick={ this.handleSearchBarNavigate}
+                            style={{ 
+                            backgroundColor: "#E9D6D7", width: "100%" }}>
+                            SearchBar
+                        </Button>
+                        
+
                 </div>
 
                 
@@ -231,4 +220,4 @@ export default class Map extends React.Component {
         )
     }
 }
-
+export default withRouter(Map);
