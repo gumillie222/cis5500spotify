@@ -29,6 +29,8 @@ app.get('/airbnb', routes.getAirbnb1);
 // takes in req.query.rank, .times, .streams, .num_airbnb, .min_price, .max_price, .min_nights
 app.get('/subcategories', routes.getSubcategories);
 
+app.get('/latitudelongitude', routes.getLatitudeLongitude)
+
 app.get('/artists_by_state_initial', routes.getArtistsStateInitial);
 
 app.get('/concerts_airbnb_count', routes.getConcertsAirbnbCount);

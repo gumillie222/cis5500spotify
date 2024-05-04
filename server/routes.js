@@ -62,6 +62,28 @@ const hello = async function (req, res) {
   return res.status(200).json({ message: 'pool is successful!' });
 }
 
+// get latitude
+
+const getLatitudeLongitude = async function (req, res) {
+
+  const query = `
+    SELECT latitude, longitude
+FROM airbnblatlong1
+LIMIT 10;
+  `
+  pool.query(query, (err, data) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+    if (data.rows.length === 0) {
+      return res.status(404).json({ message: "No data found for the given parameters." });
+    }
+    res.status(200).json(data.rows);
+  });
+
+}
+
 // get /top_cities - WORKS
 const topCities = async function (req, res) {
   const limit = parseInt(req.query.limit);
@@ -480,10 +502,10 @@ const getAveragePrice = async function (req, res) {
 
   const query = `
     SELECT a.neighborhood, AVG(a.price) AS price
-    FROM Airbnb a
-    GROUP BY a.neighborhood
-    ORDER BY AVG(a.price) DESC, a.neighborhood
-    LIMIT ?
+FROM airbnbmain a
+GROUP BY a.neighborhood
+ORDER BY AVG(a.price) DESC, a.neighborhood
+LIMIT $1;
   `;
 
   pool.query(query, [limit], (err, data) => {
@@ -494,7 +516,7 @@ const getAveragePrice = async function (req, res) {
     if (data.length === 0) {
       return res.status(404).json({ message: "No data found for the given parameters." });
     }
-    const formattedData = data.map(row => ({
+    const formattedData = data.rows.map(row => ({
       neighborhood: row.neighborhood,
       average_price: parseFloat(row.price.toFixed(2)) // Formatting the price to two decimal places
     }));
@@ -506,6 +528,7 @@ const getAveragePrice = async function (req, res) {
 // The exported functions, which can be accessed in index.js.
 module.exports = {
   topCities,
+  getLatitudeLongitude,
   topArtists,
   getAirbnb,
   getAirbnb1,
