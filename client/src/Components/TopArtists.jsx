@@ -54,7 +54,7 @@ const TopArtists = () => {
                             ))}
                         </List>
                     ) : (
-                        <Typography>No results found</Typography>
+                        <Typography>waiting for query results…</Typography>
                     )}
                 </Box>
             </Box>

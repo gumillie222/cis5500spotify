@@ -62,7 +62,7 @@ const GetMostImproved = () => {
                             ) : (
                                 <TableRow>
                                     <TableCell colSpan={3}>
-                                        <Typography>No results found</Typography>
+                                        <Typography>waiting for query results…</Typography>
                                     </TableCell>
                                 </TableRow>
                             )}

@@ -47,7 +47,7 @@ const GetEventsAccommodations = () => {
                         <TableHead>
                             <TableRow>
                                 <TableCell>Event Category</TableCell>
-                                <TableCell>City</TableCell>
+                                <TableCell>Number of Events</TableCell>
                                 <TableCell>Number of Accommodations</TableCell>
                             </TableRow>
                         </TableHead>
@@ -55,15 +55,15 @@ const GetEventsAccommodations = () => {
                             {results.length > 0 ? (
                                 results.map((result, index) => (
                                     <TableRow key={index}>
-                                        <TableCell>{result.event_category}</TableCell>
-                                        <TableCell>{result.city}</TableCell>
-                                        <TableCell>{result.num_airbnb}</TableCell>
+                                        <TableCell>{result.event_subcategory}</TableCell>
+                                        <TableCell>{result.event_count}</TableCell>
+                                        <TableCell>{result.numairbnb}</TableCell>
                                     </TableRow>
                                 ))
                             ) : (
                                 <TableRow>
                                     <TableCell colSpan={3}>
-                                        <Typography>No results found</Typography>
+                                        <Typography>waiting for query results…</Typography>
                                     </TableCell>
                                 </TableRow>
                             )}

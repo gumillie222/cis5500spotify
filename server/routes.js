@@ -253,7 +253,7 @@ const getArtistsStateInitial = async function (req, res) {
         JOIN concertaddr ON c.formatted_address = concertaddr.formatted_address
         WHERE concertaddr.state = '${state}'
     )
-    SELECT t.artist, t.title, COUNT(a.name)
+    SELECT t.artist, t.title, COUNT(a.name) AS count
     FROM airbnbmain a
     JOIN airbnbhost ON a.host_id = airbnbhost.host_id
     JOIN temp2 t2 ON t2.city = a.city
@@ -396,30 +396,10 @@ const getEventsAccomodations = async function (req, res) {
   const city = req.query.city || 'Los Angeles';
 
   const query = `
-  WITH AirbnbCount AS (
-   SELECT a.city AS city, COUNT(a.id) AS numAirbnb
-   FROM airbnbmain a
-   GROUP BY a.city
-),
-EventCounts AS (
-   SELECT ca.city, c.event_category, COUNT(c.event_id) AS event_count
-   FROM concertmain c JOIN concertaddr ca ON c.formatted_address = ca.formatted_address
-   GROUP BY ca.city, c.event_category
-),
-MaxEventCounts AS (
-   SELECT city, MAX(event_count) AS max_event_count
-   FROM EventCounts
-   GROUP BY city
-),
-MostPopularEventCategory AS (
-   SELECT ec.city, ec.event_category
-   FROM EventCounts ec
-   INNER JOIN MaxEventCounts mex ON ec.city=mex.city AND ec.event_count=mex.max_event_count
-)
-SELECT mpec.city, mpec.event_category, ac.numAirbnb
-FROM MostPopularEventCategory mpec
-JOIN AirbnbCount ac ON mpec.city=ac.city
-WHERE ac.city = $1;
+  SELECT mpec.event_subcategory, mpec.event_count, ac.numAirbnb
+  FROM MostPopularEventCategory mpec
+  JOIN AirbnbCount ac ON mpec.city = ac.city
+  WHERE ac.city LIKE $1;
   `;
 
   pool.query(query, [`${city}`], (err, data) => {

@@ -54,23 +54,23 @@ const GetArtistsInitial = () => {
                         <TableHead>
                             <TableRow>
                                 <TableCell>Artist Name</TableCell>
-                                <TableCell>City</TableCell>
-                                <TableCell>State</TableCell>
+                                <TableCell>Title</TableCell>
+                                <TableCell>Count</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {results.length > 0 ? (
                                 results.map((result, index) => (
                                     <TableRow key={index}>
-                                        <TableCell>{result.name}</TableCell>
-                                        <TableCell>{result.city}</TableCell>
-                                        <TableCell>{result.state}</TableCell>
+                                        <TableCell>{result.artist}</TableCell>
+                                        <TableCell>{result.title}</TableCell>
+                                        <TableCell>{result.count}</TableCell>
                                     </TableRow>
                                 ))
                             ) : (
                                 <TableRow>
                                     <TableCell colSpan={3}>
-                                        <Typography>No results found</Typography>
+                                        <Typography>waiting for query results…</Typography>
                                     </TableCell>
                                 </TableRow>
                             )}

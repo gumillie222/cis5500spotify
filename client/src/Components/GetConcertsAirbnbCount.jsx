@@ -68,7 +68,7 @@ const GetConcertsAirbnbCount = () => {
                             ) : (
                                 <TableRow>
                                     <TableCell colSpan={6}>
-                                        <Typography>No results found</Typography>
+                                        <Typography>waiting for query results…</Typography>
                                     </TableCell>
                                 </TableRow>
                             )}
