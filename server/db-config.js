@@ -2,7 +2,8 @@
 module.exports = {
   host: "database-1.cry1vuardeot.us-east-1.rds.amazonaws.com",
   port: "5432",
-  user : "postgres",
+  user: "postgres",
   password: "spotbnbCIS5500!",
-  database: "public"
+  database: "postgres",
+  ssl: true
 };

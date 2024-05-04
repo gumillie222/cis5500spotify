@@ -1,8 +1,8 @@
 
 const axios = require('axios');
 const qs = require('querystring');
-const clientId = "b705173fa50946e19f1e9abd7a965362";
-const clientSecret = "99ba3355bc6a490c8e06c6a35761883f";
+const clientId = "c15b75e0f897402382da47ca5def4923";
+const clientSecret = "08143f9d064c4df4a6567857cf80e5cf";
 
 async function fetchUrl(url, options) {
     const fetch = (await import('node-fetch')).default;
