@@ -477,10 +477,10 @@ const getAveragePrice = async function (req, res) {
 
   const query = `
     SELECT a.neighborhood, AVG(a.price) AS price
-    FROM Airbnb a
-    GROUP BY a.neighborhood
-    ORDER BY AVG(a.price) DESC, a.neighborhood
-    LIMIT ?
+FROM airbnbmain a
+GROUP BY a.neighborhood
+ORDER BY AVG(a.price) DESC, a.neighborhood
+LIMIT $1;
   `;
 
   pool.query(query, [limit], (err, data) => {
@@ -491,7 +491,7 @@ const getAveragePrice = async function (req, res) {
     if (data.length === 0) {
       return res.status(404).json({ message: "No data found for the given parameters." });
     }
-    const formattedData = data.map(row => ({
+    const formattedData = data.rows.map(row => ({
       neighborhood: row.neighborhood,
       average_price: parseFloat(row.price.toFixed(2)) // Formatting the price to two decimal places
     }));
