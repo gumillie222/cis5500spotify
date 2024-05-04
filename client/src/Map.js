@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -8,6 +7,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import GoogleMapReact from 'google-map-react';
 import PushPinIcon from '@mui/icons-material/PushPin';
+import axios from "axios"
 import {
     setKey,
     setDefaults,
@@ -20,6 +20,7 @@ import {
     geocode,
     RequestType,
   } from "react-geocode";
+
   
 
   setDefaults({
@@ -38,35 +39,52 @@ import {
 
 export default class Map extends React.Component {
 
+
     constructor(props) {
         super();
+        const res = axios.get("http://localhost:8081/latitudelongitude")
         this.state = {
             latitude: 39.952305,
             longitude: -75.193703,
-            concerts: concertData,
+            concerts: [],
             selectedConcertId: null,
             markerClicked: false,
             searchText: "",
         }
     }
 
+   handlePinClick = (concert) => {
+        // Toggle: if the same concert is clicked again, close its details; otherwise, open the clicked concert's details.
+        const selectedId = this.state.selectedConcertId === concert.id ? null : concert.id;
+        this.setState({ selectedConcertId: selectedId });
+    }
+      
+
     
 
-    componentDidMount = () => {
+    componentDidMount = async () => {
+        try {
+            const response = await axios.get("http://localhost:8081/latitudelongitude");
+            this.setState({
+                concerts: response.data
+            });
+        } catch (error) {
+            console.error('Failed to fetch concerts:', error);
+        }
+
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                console.log(position.coords)
                 this.setState({
                     latitude: position.coords.latitude,
                     longitude: position.coords.longitude,
-                    concerts: concertData,
-                })
+                });
             },
             (error) => {
-                console.log("Error Getting Location " + error.message)
+                console.error("Geolocation error:", error);
             }
-        )
-    }
+        );
+    };
+    
     header = () => {
         const getDistanceFromLatLonInKm = (lat1, lon1, lat2, lon2) => {
             const deg2rad = (deg) => { return deg * (Math.PI / 180) }
@@ -82,25 +100,30 @@ export default class Map extends React.Component {
         }
         
         const handleSearch = () => {
-            let filteredConcerts = concertData.filter(
-                g => 
-                g.name.toLowerCase().includes(this.state.searchText.toLowerCase())
-            &&
-            (
-                getDistanceFromLatLonInKm(this.state.latitude, this.state.longitude, g.latitude, g.longitude) < this.state.distance 
-            )
-        )
-            this.setState({
-                concerts: filteredConcerts
-            })
+            axios.get("http://localhost:8081/latitudelongitude")
+                .then(response => {
+                    const filteredConcerts = response.data.filter(
+                        g => g.name.toLowerCase().includes(this.state.searchText.toLowerCase())
+                            && this.getDistanceFromLatLonInKm(this.state.latitude, this.state.longitude, g.latitude, g.longitude) < this.state.distance
+                    );
+                    this.setState({ concerts: filteredConcerts });
+                })
+                .catch(error => console.log("Error filtering concerts: " + error.message));
+            
         }
 
+        
+
         const resetAll = () => {
-            this.setState({
-                concerts: concertData,
-                distance: 40,
-                searchText: ""
-            })
+            axios.get("http://localhost:8081/latitudelongitude")
+                .then(response => {
+                    this.setState({
+                        concerts: response.data,
+                        distance: 40,
+                        searchText: ""
+                    });
+                })
+                .catch(error => console.log("Error resetting data: " + error.message));
         }
 
         
@@ -131,19 +154,7 @@ export default class Map extends React.Component {
                     
                     />
                 </div>
-                <div>
-                        <Button variant="contained"
-                                onClick={resetAll}
-                            style={{ backgroundColor: "#E9D6D7", width: "50%" }}>
-                                Most Popular Cities (1)
-                        </Button>
-                        <Button variant="contained"
-                        onClick={handleSearch}
-                            style={{ backgroundColor: "#E9D6D7", width: "50%"}}>
-                                Popular Airbnb's (3)
-                        </Button>
 
-                </div>
                 
                 <div>
                         <Button variant="contained"
@@ -165,10 +176,8 @@ export default class Map extends React.Component {
     }
 
     map = () => {
-        const handleConcertClick = (concert) => {
-            window.location.replace("/concert/" + concert.id)
-        }
-
+        
+        
         return (
             <div style={{ height: '100vh', width: '100%' }}>
                 <GoogleMapReact
@@ -176,7 +185,7 @@ export default class Map extends React.Component {
                     defaultCenter={{ lat: 10.99835602, lng: 77.01502627 }}
                     defaultZoom={14}
                     center={{ lat: this.state.latitude, lng: this.state.longitude }}
-                    onClick={() => this.setState({ selectedConcertId: null, markerClicked: false })}
+                    onClick={() => this.setState({ selectedConcertId: null })}
                 >
                     {this.state.concerts.map((concert) => (
                         <PushPinIcon 
@@ -184,8 +193,8 @@ export default class Map extends React.Component {
                             lat={concert.latitude}
                             lng={concert.longitude}
                             onClick={(e) => {
-                                e.stopPropagation(); // Prevent map click event
-                                this.setState({ selectedConcertId: concert.id, markerClicked: true });
+                                e.stopPropagation(); // Prevent map click event from propagating
+                                this.handlePinClick(concert);
                             }}
                         />
                     ))}
@@ -196,24 +205,18 @@ export default class Map extends React.Component {
                                     key={"info-" + concert.id}
                                     lat={concert.latitude}
                                     lng={concert.longitude}
-                                    onClick={() => {handleConcertClick(concert)}}
                                     style={{ backgroundColor: "#E9D6D7", width: 100, position: 'absolute', transform: 'translate(-50%, -100%)', padding: 10, borderRadius: 20}}>
                                     <Typography style={{textAlign: "center"}}>{concert.name}</Typography>
                                 </div>
                             );
-                        } else {
-                            return null;
                         }
+                        return null;
                     })}
-                    <PushPinIcon
-                        color={"primary"}
-                        lat={this.state.latitude}
-                        lng={this.state.longitude}
-                    />
                 </GoogleMapReact>
             </div>
         );
     }
+    
 
     render() {
         return (
@@ -228,13 +231,4 @@ export default class Map extends React.Component {
         )
     }
 }
-
-let concertData = [
-    {
-        id: "1",
-        name: "Nanzhou Noodles",
-        latitude: 39.955513688565155,
-        longitude: -75.15695542730683
-    },
-];
 
