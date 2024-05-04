@@ -293,15 +293,15 @@ const getAvgAirbnbPrice = async function (req, res) {
 
   const query = `
     SELECT a.city, a.room_type, AVG(a.price) AS price
-FROM airbnbmain a
-GROUP BY a.city, a.room_type
-HAVING AVG(a.price) > 0
-ORDER BY AVG(a.price)
-LIMIT $1
+    FROM airbnbmain a
+    GROUP BY a.city, a.room_type
+    HAVING AVG(a.price) > 0
+    ORDER BY AVG(a.price)
+    LIMIT ${limit}
 
   `;
 
-  pool.query(query, [limit], (err, data) => {
+  pool.query(query, (err, data) => {
     if (err) {
       console.log(err);
       return res.status(500).json({ error: "Internal server error" });
@@ -323,13 +323,13 @@ const getCitiesBasedOnConcerts = async function (req, res) {
     SELECT ca.city, COUNT(c.event_id) AS concert_count
     FROM concertmain c
     JOIN concertaddr ca ON c.formatted_address = ca.formatted_address
-    JOIN charturl ch ON c.title LIKE CONCAT('%', ch.artist, '%')
+    JOIN charturl ch ON c.artist  = ch.artist
     GROUP BY ca.city
     ORDER BY COUNT(c.event_id) DESC
-    LIMIT $1
+    LIMIT ${limit}
   `;
 
-  pool.query(query, [limit], (err, data) => {
+  pool.query(query, (err, data) => {
     if (err) {
       console.log(err);
       return res.status(500).json({ error: "Internal server error" });
@@ -349,7 +349,7 @@ const getMonthPopularity = async function (req, res) {
   const query = `
     SELECT c.month, COUNT(c.event_id) AS concert_count
     FROM concertmain c
-    JOIN charturl ch ON c.title LIKE CONCAT('%', ch.artist, '%')
+    JOIN charturl ch ON c.artist  = ch.artist
     WHERE ch.artist LIKE $1
     GROUP BY c.month
     ORDER BY concert_count DESC;
