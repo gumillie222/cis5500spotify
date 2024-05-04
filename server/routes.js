@@ -1,5 +1,16 @@
 var config = require('./db-config.js');
 var mysql = require('mysql');
+const { Client } = require('pg');
+
+const client = new Client({
+  user: config.user,
+  host: config.host,
+  database: config.database,
+  password: config.password,
+  port: config.port,
+});
+
+client.connect();
 
 config.connectionLimit = 10;
 var connection = mysql.createPool(config);
@@ -144,38 +155,61 @@ const topArtists = async function (req, res) {
   });
 }
 
-
-// get /airbnb -- NEED TO CHECK AGAIN, COULDN'T RUN
+// get /airbnb test connection
 const getAirbnb = async function (req, res) {
-  const priceMin = parseInt(req.query.price_min) || 0;
-  const priceMax = parseInt(req.query.price_max);
-  const numReviews = parseInt(req.query.num_reviews) || 0;
-  const chartRank = parseInt(req.query.chart_rank);
-  if (isNaN(priceMax) || isNaN(chartRank)) {
-    return res.status(400).send('Invalid max or rank parameter');
-  }
-  connection.query(`
-  CREATE INDEX idx_chart_rank ON Chart_small(chart_rank);
-  SELECT DISTINCT *
-  FROM Airbnb a
-  JOIN Concert c
-    ON a.city = c.city
-  JOIN Chart_small ch
-    ON c.title LIKE CONCAT('%', ch.artist,'%')
-  WHERE a.price <= 10000 AND a.price >= 0
-    AND a.number_of_reviews >= 0
-    AND ch.chart_rank <= 5
-  ORDER BY a.price DESC, c.city;
-  
-`, (err, data) => {
+  client.query(`SELECT DISTINCT *
+  FROM airbnbmain a
+  JOIN airbnbhost ON a.host_id = airbnbhost.host_id
+  JOIN concertaddr ON a.city = concertaddr.city
+  JOIN concertmain c
+    ON c.formatted_address = concertaddr.formatted_address
+  JOIN charturl ON c.title LIKE CONCAT('%', charturl.artist,'%')
+  JOIN chartmain ON charturl.url = chartmain.url
+  WHERE a.price < 300 AND a.price > 50
+    AND a.number_of_review > 30
+    AND chartmain.chart_rank <= 5
+  ORDER BY a.price DESC, concertaddr.city`, (err, data) => {
     if (err || data.length === 0) {
       console.log(err);
       res.json({});
     } else {
-      res.json(data);
+      res.status(200).json(data);
     }
+    client.end();
   });
 }
+
+// // get /airbnb -- NEED TO CHECK AGAIN, COULDN'T RUN
+// const getAirbnb = async function (req, res) {
+//   const priceMin = parseInt(req.query.price_min) || 0;
+//   const priceMax = parseInt(req.query.price_max);
+//   const numReviews = parseInt(req.query.num_reviews) || 0;
+//   const chartRank = parseInt(req.query.chart_rank);
+//   if (isNaN(priceMax) || isNaN(chartRank)) {
+//     return res.status(400).send('Invalid max or rank parameter');
+//   }
+//   connection.query(`
+//   CREATE INDEX idx_chart_rank ON Chart_small(chart_rank);
+//   SELECT DISTINCT *
+//   FROM Airbnb a
+//   JOIN Concert c
+//     ON a.city = c.city
+//   JOIN Chart_small ch
+//     ON c.title LIKE CONCAT('%', ch.artist,'%')
+//   WHERE a.price <= 10000 AND a.price >= 0
+//     AND a.number_of_reviews >= 0
+//     AND ch.chart_rank <= 5
+//   ORDER BY a.price DESC, c.city;
+  
+// `, (err, data) => {
+//     if (err || data.length === 0) {
+//       console.log(err);
+//       res.json({});
+//     } else {
+//       res.json(data);
+//     }
+//   });
+// }
 
 // get /subcategories - WORKS
 // {"event_subcategory":"HIP-HOP/RAP","count":91}

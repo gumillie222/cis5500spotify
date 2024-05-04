@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -45,6 +46,7 @@ export default class Map extends React.Component {
             concerts: concertData,
             selectedConcertId: null,
             markerClicked: false,
+            searchText: "",
         }
     }
 
@@ -66,30 +68,93 @@ export default class Map extends React.Component {
         )
     }
     header = () => {
+        const getDistanceFromLatLonInKm = (lat1, lon1, lat2, lon2) => {
+            const deg2rad = (deg) => { return deg * (Math.PI / 180) }
+            var R = 6371; // Radius of the earth in km
+            var dLat = deg2rad(lat2 - lat1);
+            var dLon = deg2rad(lon2 - lon1);
+            var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+                    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            var d = R * c; // Distance in km
+            return d;
+        }
+        
+        const handleSearch = () => {
+            let filteredConcerts = concertData.filter(
+                g => 
+                g.name.toLowerCase().includes(this.state.searchText.toLowerCase())
+            &&
+            (
+                getDistanceFromLatLonInKm(this.state.latitude, this.state.longitude, g.latitude, g.longitude) < this.state.distance 
+            )
+        )
+            this.setState({
+                concerts: filteredConcerts
+            })
+        }
+
+        const resetAll = () => {
+            this.setState({
+                concerts: concertData,
+                distance: 40,
+                searchText: ""
+            })
+        }
+
+        
         return (
-            <div style={{ }}>
+            <div style={{ marginBottom: 10 }}>
                 <Typography variant='h4' style={{ textAlign: "center"}}>
                     S P O T B N B
                 </Typography>
-                <TextField label="Search for a concert..." 
+                <TextField label="Search for a AirBnb..." 
                     variant="outlined" 
+                    value={this.state.searchText}
                     style={{ width: "100%"}}
+                    onChange={(event) => {this.setState({ searchText: event.target.value })}}
                 />
                 <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItem: "center"}}>
                     <Typography>
                         Distance: 
                     </Typography>
-                    <Slider style={{ width: "75%" }} />
+                    <Slider style={{ width: "75%" }} 
+                        value={this.state.distance}
+                        valueLabelDisplay='auto'
+                        step={10}
+                        marks
+                        min={0}
+                        max={50}
+                        onChange={(event, value) => this.setState({distance: value})}
+                    
+                    
+                    />
+                </div>
+                <div>
+                        <Button variant="contained"
+                                onClick={resetAll}
+                            style={{ backgroundColor: "#E9D6D7", width: "50%" }}>
+                                Most Popular Cities (1)
+                        </Button>
+                        <Button variant="contained"
+                        onClick={handleSearch}
+                            style={{ backgroundColor: "#E9D6D7", width: "50%"}}>
+                                Popular Airbnb's (3)
+                        </Button>
+
                 </div>
                 
                 <div>
-                        <Button variant="outlined"
-                            style={{ width: "50%" }}>
+                        <Button variant="contained"
+                                onClick={resetAll}
+                            style={{ backgroundColor: "#E9D6D7", width: "50%" }}>
                                 <RestartAltIcon />
                             Reset
                         </Button>
                         <Button variant="contained"
-                            style={{ width: "50%"}}>
+                        onClick={handleSearch}
+                            style={{ backgroundColor: "#E9D6D7", width: "50%"}}>
                                 <SearchIcon />
                             Search
                         </Button>
@@ -100,6 +165,10 @@ export default class Map extends React.Component {
     }
 
     map = () => {
+        const handleConcertClick = (concert) => {
+            window.location.replace("/concert/" + concert.id)
+        }
+
         return (
             <div style={{ height: '100vh', width: '100%' }}>
                 <GoogleMapReact
@@ -127,8 +196,9 @@ export default class Map extends React.Component {
                                     key={"info-" + concert.id}
                                     lat={concert.latitude}
                                     lng={concert.longitude}
-                                    style={{ backgroundColor: "white", width: 100, position: 'absolute', transform: 'translate(-50%, -100%)' }}>
-                                    <Typography>{concert.name}</Typography>
+                                    onClick={() => {handleConcertClick(concert)}}
+                                    style={{ backgroundColor: "#E9D6D7", width: 100, position: 'absolute', transform: 'translate(-50%, -100%)', padding: 10, borderRadius: 20}}>
+                                    <Typography style={{textAlign: "center"}}>{concert.name}</Typography>
                                 </div>
                             );
                         } else {
@@ -148,7 +218,7 @@ export default class Map extends React.Component {
     render() {
         return (
             <>
-             <div style={{backgroundColor: "beige"}}>
+             <div style={{backgroundColor: "#F5C3C2"}}>
                 {this.header()}
                 {this.map()}
                 
@@ -166,4 +236,5 @@ let concertData = [
         latitude: 39.955513688565155,
         longitude: -75.15695542730683
     },
-]
+];
+
