@@ -2,7 +2,7 @@ const bodyParser = require('body-parser');
 const express = require('express');
 var routes = require("./routes.js");
 const cors = require('cors');
-
+require('dotenv').config();
 const app = express();
 
 app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
@@ -23,7 +23,7 @@ app.get('/top_cities', routes.topCities);
 app.get('/top_artists', routes.topArtists);
 
 // takes in req.query.price_min, .price_max, .num_reviews, .chart_rank
-app.get('/airbnb', routes.getAirbnb);
+app.get('/airbnb', routes.getAirbnb1);
 
 // get subcategories
 // takes in req.query.rank, .times, .streams, .num_airbnb, .min_price, .max_price, .min_nights
