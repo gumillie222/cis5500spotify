@@ -166,14 +166,14 @@ const getAirbnb = async function (req, res) {
       AND chartmain.chart_rank <= ${chartRank}
     ORDER BY a.price DESC, concertaddr.city;
 `, (err, data) => {
-  if (err || data.length === 0) {
-    console.log(err);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-  if (data.length === 0) {
-    return res.status(404).json({ message: "No data found for the given parameters." });
-  }
-  res.status(200).json(data);
+    if (err || data.length === 0) {
+      console.log(err);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+    if (data.length === 0) {
+      return res.status(404).json({ message: "No data found for the given parameters." });
+    }
+    res.status(200).json(data);
   });
 }
 
