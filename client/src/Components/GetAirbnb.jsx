@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { TextField, Button } from '@mui/material';
-
+import {
+    TextField, Button, Container, Typography, Box,
+    Table, TableBody, TableCell, TableContainer,
+    TableHead, TableRow, Paper
+} from '@mui/material';
 
 const GetAirbnb = () => {
     const [results, setResults] = useState([]);
@@ -11,54 +14,95 @@ const GetAirbnb = () => {
     const [chartRank, setChartRank] = useState('');
 
     const search = async () => {
-        const res = await axios.get(`http://localhost:8081/airbnb?price_min=${priceMin}&price_max=${priceMax}&num_reviews=${numReviews}&chart_rank=${chartRank}`);
+        const res = await axios.get(`http://localhost:8081/airbnb`, {
+            params: {
+                price_min: priceMin,
+                price_max: priceMax,
+                num_reviews: numReviews,
+                chart_rank: chartRank,
+            }
+        });
         setResults(res.data);
     };
 
     return (
-        <div>
-            <h2>Get Airbnbs in Cities of Top Artists:</h2>
-            <TextField
-                value={priceMin}
-                onChange={(e) => setPriceMin(e.target.value)}
-                placeholder="set minimum price"
-            />
-            <TextField
-                value={priceMax}
-                onChange={(e) => setPriceMax(e.target.value)}
-                placeholder="set maximum price"
-            />
-            <TextField
-                value={numReviews}
-                onChange={(e) => setNumReviews(e.target.value)}
-                placeholder="set number of reviews"
-            />
-            <TextField
-                value={chartRank}
-                onChange={(e) => setChartRank(e.target.value)}
-                placeholder="set chart rank"
-            />
-            <Button variant="contained" onClick={search}>
-                Search
-            </Button>
+        <Container>
+            <Box my={4}>
+                <Typography variant="h4" component="h2">
+                    Get Airbnbs in Cities of Top Artists (top 10)
+                </Typography>
 
-            <div>
-                <h2>Search result:</h2>
-                {results.length > 0 ? (
-                    <ul>
-                        {results.map((result, index) => (
-                            <li key={index}>{JSON.stringify(result)}</li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p>No results found</p>
-                )}
-            </div>
-        </div>
+                <Box display="flex" flexDirection="row" gap={2} my={2}>
+                    <TextField
+                        label="Minimum Price"
+                        value={priceMin}
+                        onChange={(e) => setPriceMin(e.target.value)}
+                        fullWidth
+                    />
+                    <TextField
+                        label="Maximum Price"
+                        value={priceMax}
+                        onChange={(e) => setPriceMax(e.target.value)}
+                        fullWidth
+                    />
+                    <TextField
+                        label="Number of Reviews"
+                        value={numReviews}
+                        onChange={(e) => setNumReviews(e.target.value)}
+                        fullWidth
+                    />
+                    <TextField
+                        label="Chart Rank"
+                        value={chartRank}
+                        onChange={(e) => setChartRank(e.target.value)}
+                        fullWidth
+                    />
+                </Box>
+
+                <Box my={2}>
+                    <Button variant="contained" color="primary" onClick={search} fullWidth>
+                        Search
+                    </Button>
+                </Box>
 
 
+                <Typography variant="h5" component="h3">
+                    Search Results
+                </Typography>
+
+                <TableContainer component={Paper} sx={{ height: 400, overflow: 'auto' }}>
+                    <Table stickyHeader>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Name</TableCell>
+                                <TableCell>City</TableCell>
+                                <TableCell>Price</TableCell>
+                                <TableCell>Number of Reviews</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {results.length > 0 ? (
+                                results.map((result, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell>{result.name}</TableCell>
+                                        <TableCell>{result.city}</TableCell>
+                                        <TableCell>{result.price}</TableCell>
+                                        <TableCell>{result.number_of_reviews}</TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={4}>
+                                        <Typography>waiting for query results…</Typography>
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Box>
+        </Container>
     );
-
-}
+};
 
 export default GetAirbnb;

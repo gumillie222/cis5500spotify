@@ -1,46 +1,79 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { TextField, Button } from '@mui/material';
+import {
+    TextField, Button, Container, Typography, Box,
+    Table, TableBody, TableCell, TableContainer,
+    TableHead, TableRow, Paper
+} from '@mui/material';
 
-
-const GetEventsAccomodations = () => {
+const GetEventsAccommodations = () => {
     const [results, setResults] = useState([]);
     const [city, setCity] = useState('');
 
     const search = async () => {
-        const res = await axios.get(`http://localhost:8081/events_and_accommodations?city=${city}`);
+        const res = await axios.get(`http://localhost:8081/events_and_accommodations`, {
+            params: { city },
+        });
         setResults(res.data);
     };
 
     return (
-        <div>
-            <h2>Get a Popular Event's Category and the Number of Events Based on City:</h2>
-            <TextField
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="set city"
-            />
-            <Button variant="contained" onClick={search}>
-                Search
-            </Button>
+        <Container>
+            <Box my={4}>
+                <Typography variant="h4" component="h2">
+                    Get a Popular Event's Category and the Number of Events Based on City
+                </Typography>
 
-            <div>
-                <h2>Search result:</h2>
-                {results.length > 0 ? (
-                    <ul>
-                        {results.map((result, index) => (
-                            <li key={index}>{JSON.stringify(result)}</li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p>No results found</p>
-                )}
-            </div>
-        </div>
+                <Box display="flex" flexDirection="row" gap={2} my={2} flexWrap="nowrap">
+                    <TextField
+                        label="Set City"
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        fullWidth
+                    />
+                </Box>
+                <Box my={2}>
+                    <Button variant="contained" color="primary" onClick={search} fullWidth>
+                        Search
+                    </Button>
+                </Box>
 
+                <Typography variant="h5" component="h3">
+                    Search Results
+                </Typography>
 
+                <TableContainer component={Paper} sx={{ height: 400, overflow: 'auto' }}>
+                    <Table stickyHeader>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Event Category</TableCell>
+                                <TableCell>Number of Events</TableCell>
+                                <TableCell>Number of Accommodations</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {results.length > 0 ? (
+                                results.map((result, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell>{result.event_subcategory}</TableCell>
+                                        <TableCell>{result.event_count}</TableCell>
+                                        <TableCell>{result.numairbnb}</TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={3}>
+                                        <Typography>waiting for query results…</Typography>
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Box>
+        </Container>
     );
+};
 
-}
+export default GetEventsAccommodations;
 
-export default GetEventsAccomodations;

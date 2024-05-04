@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { TextField, Button } from '@mui/material';
-
+import { TextField, Button, Container, Typography, Box, List, ListItem } from '@mui/material';
 
 const TopCities = () => {
     const [results, setResults] = useState([]);
@@ -13,34 +12,47 @@ const TopCities = () => {
     };
 
     return (
-        <div>
-            <h2>Get top cities:</h2>
-            <TextField
-                value={limit}
-                onChange={(e) => setLimit(e.target.value)}
-                placeholder="set number of results"
-            />
-            <Button variant="contained" onClick={search}>
-                Search
-            </Button>
+        <Container>
+            <Box my={4}>
+                <Typography variant="h4" component="h2">
+                    Get Top Cities
+                </Typography>
 
-            <div>
-                <h2>Search result:</h2>
-                {results.length > 0 ? (
-                    <ul>
-                        {results.map((result, index) => (
-                            <li key={index}>{JSON.stringify(result)}</li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p>No results found</p>
-                )}
-            </div>
-        </div>
+                <Box my={2}>
+                    <TextField
+                        label="Set Number of Results"
+                        value={limit}
+                        onChange={(e) => setLimit(e.target.value)}
+                        fullWidth
+                    />
+                </Box>
 
+                <Box my={2}>
+                    <Button variant="contained" color="primary" onClick={search} fullWidth>
+                        Search
+                    </Button>
+                </Box>
 
+                <Typography variant="h5" component="h3">
+                    Search Results:
+                </Typography>
+
+                <Box sx={{ height: 300, overflow: 'auto' }}>
+                    {results.length > 0 ? (
+                        <List>
+                            {results.map((result, index) => (
+                                <ListItem key={index}>
+                                    {result.city}
+                                </ListItem>
+                            ))}
+                        </List>
+                    ) : (
+                        <Typography>waiting for query results…</Typography>
+                    )}
+                </Box>
+            </Box>
+        </Container>
     );
-
-}
+};
 
 export default TopCities;
