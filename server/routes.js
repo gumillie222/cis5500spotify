@@ -236,7 +236,7 @@ const getArtistsStateInitial = async function (req, res) {
     JOIN airbnbhost ON a.host_id = airbnbhost.host_id
     JOIN temp2 t2 ON t2.city = a.city
     INNER JOIN temp t ON t2.artist = t.artist
-    WHERE t.artist IS NOT NULL AND t.artist <> ''
+    WHERE t.artist <> ''
     GROUP BY t.artist, t.title
     ORDER BY t.artist DESC
     `;
