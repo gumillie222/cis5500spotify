@@ -67,9 +67,9 @@ const hello = async function (req, res) {
 const getLatitudeLongitude = async function (req, res) {
 
   const query = `
-    SELECT latitude, longitude
-FROM airbnblatlong1
-LIMIT 10;
+    SELECT latitude, longitude, name
+FROM airbnblatlong a1 JOIN airbnbmain a ON a1.id = a.id
+LIMIT 1000;
   `
   pool.query(query, (err, data) => {
     if (err) {
@@ -143,6 +143,7 @@ const topArtists = async function (req, res) {
   });
 }
 
+
 //get /airbnb - WORK
 const getAirbnb = async function (req, res) {
   const priceMin = parseInt(req.query.price_min) || 0;
@@ -166,14 +167,14 @@ const getAirbnb = async function (req, res) {
       AND chartmain.chart_rank <= ${chartRank}
     ORDER BY a.price DESC, concertaddr.city;
 `, (err, data) => {
-    if (err || data.length === 0) {
-      console.log(err);
-      return res.status(500).json({ error: "Internal server error" });
-    }
-    if (data.length === 0) {
-      return res.status(404).json({ message: "No data found for the given parameters." });
-    }
-    res.status(200).json(data);
+  if (err || data.length === 0) {
+    console.log(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+  if (data.length === 0) {
+    return res.status(404).json({ message: "No data found for the given parameters." });
+  }
+  res.status(200).json(data);
   });
 }
 
@@ -513,7 +514,6 @@ LIMIT $1;
 // The exported functions, which can be accessed in index.js.
 module.exports = {
   topCities,
-  getLatitudeLongitude,
   topArtists,
   getAirbnb,
   getSubcategories,
@@ -525,5 +525,6 @@ module.exports = {
   getEventsAccomodations,
   getMostImprovedSongs,
   getAveragePrice,
-  hello
+  hello,
+  getLatitudeLongitude
 }
