@@ -43,6 +43,24 @@ const { searchSpotifyForArtistByTitle } = require('./spotify-auth');
 //     }
 //   }
 // });
+const getLatitudeLongitude = async function (req, res) {
+    const query = `
+      SELECT latitude, longitude, name
+  FROM airbnblatlong a1 JOIN airbnbmain a ON a1.id = a.id
+  LIMIT 10;
+    `
+    pool.query(query, (err, data) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ error: "Internal server error" });
+      }
+      if (data.rows.length === 0) {
+        return res.status(404).json({ message: "No data found for the given parameters." });
+      }
+      res.status(200).json(data.rows);
+    });
+  
+  }
 
 /* -------------------------------------------------- */
 /* ------------------- Route Handlers --------------- */
@@ -502,5 +520,6 @@ module.exports = {
   getEventsAccomodations,
   getMostImprovedSongs,
   getAveragePrice,
-  hello
+  hello,
+  getLatitudeLongitude
 }
