@@ -21,28 +21,28 @@ const { searchSpotifyForArtistByTitle } = require('./spotify-auth');
   console.log('Index created successfully')});*/
 
 // Create a new column on concert to contain the artist name
-pool.query('ALTER TABLE Concert ADD COLUMN artist VARCHAR(255);')
-pool.query(`SELECT title FROM Concert 
-                WHERE artist IS NULL AND event_category = "MUSIC"`, async (err, results) => {
-  if (err) {
-    console.error('Error fetching titles:', err);
-    return;
-  }
-  for (let result of results) {
-    const artistName = await searchSpotifyForArtistByTitle(result.title);
-    if (artistName) {
-      pool.query(`
-        UPDATE Concert SET artist = ? WHERE title = ?
-        `, [artistName, result.title], (err, updateResults) => {
-        if (err) {
-          console.error('Error updating artist:', err);
-        } else {
-          console.log(`Updated artist for title ${result.title}: ${artistName}`);
-        }
-      });
-    }
-  }
-});
+// pool.query('ALTER TABLE Concert ADD COLUMN artist VARCHAR(255);')
+// pool.query(`SELECT title FROM Concert 
+//                 WHERE artist IS NULL AND event_category = "MUSIC"`, async (err, results) => {
+//   if (err) {
+//     console.error('Error fetching titles:', err);
+//     return;
+//   }
+//   for (let result of results) {
+//     const artistName = await searchSpotifyForArtistByTitle(result.title);
+//     if (artistName) {
+//       pool.query(`
+//         UPDATE Concert SET artist = ? WHERE title = ?
+//         `, [artistName, result.title], (err, updateResults) => {
+//         if (err) {
+//           console.error('Error updating artist:', err);
+//         } else {
+//           console.log(`Updated artist for title ${result.title}: ${artistName}`);
+//         }
+//       });
+//     }
+//   }
+// });
 
 /* -------------------------------------------------- */
 /* ------------------- Route Handlers --------------- */
@@ -69,58 +69,27 @@ const topCities = async function (req, res) {
     return res.status(400).send('Invalid limit parameter');
   }
   pool.query(`
-  SELECT c.city
-  FROM Concert c
-  INNER JOIN Chart_small ch ON c.title LIKE CONCAT('%', ch.artist, '%')
-  GROUP BY c.city
-  ORDER BY COUNT(*) DESC
-  LIMIT ${limit}
+    SELECT c.city
+    FROM (SELECT city, artist
+      FROM ConcertMain cm
+      JOIN ConcertAddr ca
+      ON ca.formatted_address = cm.formatted_address) c
+    INNER JOIN (SELECT artist
+      FROM ChartMain chm
+      JOIN charturl cu ON chm.url = cu.url) ch
+    ON c.artist = ch.artist
+    GROUP BY c.city
+    ORDER BY COUNT(*) DESC
+    LIMIT ${limit}
 `, (err, data) => {
     if (err || data.length === 0) {
       console.log(err);
       res.json({});
     } else {
-      res.json(data);
+      res.json(data.rows);
     }
   });
 }
-/*
-// get /top_cities
-const topCities = async function (req, res) {
-  const limit = parseInt(req.query.limit);
-  if (isNaN(limit) || limit < 1) {
-    return res.status(400).send('Invalid limit parameter');
-  }
-
-  try {
-    // Suppose you have an artist name in query params
-    const artist = await searchSpotifyForArtist(req.query.artist);
-    if (!artist) {
-      return res.status(404).send('Artist not found');
-    }
-
-    pool.query(`
-      SELECT c.city
-      FROM Concert c
-      WHERE c.artist_id = ?
-      GROUP BY c.city
-      ORDER BY COUNT(*) DESC
-      LIMIT ?
-    `, [artist.id, limit], (err, data) => {
-      if (err || data.length === 0) {
-        console.error(err);
-        res.json({});
-      } else {
-        res.json(data);
-      }
-    });
-
-  } catch (error) {
-    console.error('Failed to search for artist:', error);
-    res.status(500).send('Internal server error');
-  }
-};
-*/
 
 // get /top_artists - WORKS
 const topArtists = async function (req, res) {
@@ -135,7 +104,9 @@ const topArtists = async function (req, res) {
   }
   pool.query(`
     SELECT ch.artist
-    FROM Chart ch
+    FROM (SELECT artist, chart_rank, streams
+      FROM ChartMain chm
+      JOIN charturl cu ON chm.url = cu.url) ch
     WHERE ch.chart_rank <= ${position}
     GROUP BY ch.artist
     ORDER BY SUM(ch.streams) DESC
@@ -145,40 +116,13 @@ const topArtists = async function (req, res) {
       console.log(err);
       res.json({});
     } else {
-      res.status(200).json(data);
+      res.status(200).json(data.rows);
     }
   });
 }
 
-const getAirbnb1 = async function (req, res) {
-  pool.query(`
-  SELECT DISTINCT *
-  FROM airbnbmain a
-  JOIN airbnbhost ON a.host_id = airbnbhost.host_id
-  JOIN concertaddr ON a.city = concertaddr.city
-  JOIN concertmain c
-    ON c.formatted_address = concertaddr.formatted_address
-  JOIN charturl ON c.title LIKE CONCAT('%', charturl.artist,'%')
-  JOIN chartmain ON charturl.url = chartmain.url
-  WHERE a.price < 300 AND a.price > 50
-    AND a.number_of_review > 30
-    AND chartmain.chart_rank <= 5
-  ORDER BY a.price DESC, concertaddr.city; 
-`, (err, data) => {
-    if (err || data.length === 0) {
-      console.log(err);
-      res.json({});
-    } else {
-      res.json(data);
-    }
-    pool.end();
-  });
-}
-
-
-// get /airbnb -- NEED TO CHECK AGAIN, COULDN'T RUN
+//get /airbnb - WORK
 const getAirbnb = async function (req, res) {
-
   const priceMin = parseInt(req.query.price_min) || 0;
   const priceMax = parseInt(req.query.price_max) || 2000;
   const numReviews = parseInt(req.query.num_reviews) || 0;
@@ -187,19 +131,75 @@ const getAirbnb = async function (req, res) {
     return res.status(400).send('Invalid max or rank parameter');
   }
   pool.query(`
-  CREATE INDEX idx_chart_rank ON Chart_small(chart_rank);
-  SELECT DISTINCT *
-  FROM Airbnb a
-  JOIN Concert c
-    ON a.city = c.city
-  JOIN Chart_small ch
-    ON c.title LIKE CONCAT('%', ch.artist,'%')
-  WHERE a.price <= 10000 AND a.price >= 0
-    AND a.number_of_reviews >= 0
-    AND ch.chart_rank <= 5
-  ORDER BY a.price DESC, c.city;
-  
+    SELECT DISTINCT *
+    FROM airbnbmain a
+    JOIN airbnbhost ON a.host_id = airbnbhost.host_id
+    JOIN concertaddr ON a.city = concertaddr.city
+    JOIN concertmain c
+      ON c.formatted_address = concertaddr.formatted_address
+    JOIN charturl ON c.artist = charturl.artist
+    JOIN chartmain ON charturl.url = chartmain.url
+    WHERE a.price < ${priceMin} AND a.price > ${priceMax}
+      AND a.number_of_review > ${numReviews}
+      AND chartmain.chart_rank <= ${chartRank}
+    ORDER BY a.price DESC, concertaddr.city;
 `, (err, data) => {
+  if (err || data.length === 0) {
+    console.log(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+  if (data.length === 0) {
+    return res.status(404).json({ message: "No data found for the given parameters." });
+  }
+  res.status(200).json(data);
+  });
+}
+
+
+
+// get /subcategories - WORKS
+// {"event_subcategory":"HIP-HOP/RAP","count":91} 
+const getSubcategories = async function (req, res) {
+  const rank = parseInt(req.query.rank) || 10;
+  const times = parseInt(req.query.times) || 2;
+  const streams = parseInt(req.query.streams) || 800000;
+  const numAirbnb = parseInt(req.query.num_airbnb) || 10;
+  const minPrice = parseInt(req.query.min_price) || 100;
+  const maxPrice = parseInt(req.query.max_price) || 300;
+  const minNights = parseInt(req.query.min_nights) || 3;
+
+  pool.query(`
+  WITH temp AS (
+    (SELECT ch.artist
+    FROM charturl ch
+    JOIN chartmain cm ON ch.url = cm.url
+    WHERE cm.chart_rank <= ${rank}
+    GROUP BY ch.artist
+    HAVING COUNT(*) > ${times})
+      UNION
+    (SELECT ch2.artist
+    FROM charturl ch2
+    JOIN chartmain cm ON ch2.url = cm.url
+    WHERE cm.trend = 'NEW_ENTRY')
+  ),
+  temp2 AS (
+      SELECT a.city
+      FROM airbnbmain a
+      WHERE a.minimum_nights <= ${minNights}
+          AND a.price <= ${maxPrice} AND a.price >= ${minPrice}
+      GROUP BY a.city
+      HAVING COUNT(*) > ${numAirbnb}
+  )
+  SELECT c.event_subcategory, COUNT(*) AS count
+  FROM concertmain c
+  JOIN concertaddr ON c.formatted_address = concertaddr.formatted_address
+  JOIN temp t
+      ON c.artist = t.artist
+  JOIN temp2 t2
+      ON t2.city = concertaddr.city
+  GROUP BY c.event_subcategory
+  ORDER BY COUNT(*) DESC
+  `, (err, data) => {
     if (err || data.length === 0) {
       console.log(err);
       return res.status(500).json({ error: "Internal server error" });
@@ -208,62 +208,6 @@ const getAirbnb = async function (req, res) {
       return res.status(404).json({ message: "No data found for the given parameters." });
     }
     res.status(200).json(data);
-  });
-}
-
-// get /subcategories - WORKS
-// {"event_subcategory":"HIP-HOP/RAP","count":91}
-const getSubcategories = async function (req, res) {
-  const rank = parseInt(req.query.rank) || 5;
-  const times = parseInt(req.query.times) || 4;
-  const streams = parseInt(req.query.streams) || 800000;
-  const num_airbnb = parseInt(req.query.num_airbnb) || 10;
-  const min_price = parseInt(req.query.min_price) || 100;
-  const max_price = parseInt(req.query.max_price) || 300;
-  const min_nights = parseInt(req.query.min_nights) || 3;
-
-
-  pool.query(`
-  WITH temp AS (
-(SELECT ch.artist
-FROM Chart ch
-WHERE ch.chart_rank <= ${rank}
-		AND ch.year >= 2017
-GROUP BY ch.artist
-HAVING COUNT(*) > ${times}
-	OR SUM(ch.streams) > ${streams})
-UNION
-(SELECT ch2.artist
-FROM Chart ch2
-WHERE ch2.trend = 'NEW_ENTRY'
-	AND ch2.chart_rank <= 50
-GROUP BY ch2.artist
-HAVING COUNT(*) > 3)
-),
-temp2 AS (
-	SELECT a.city
-	FROM Airbnb a
-	WHERE a.minimum_nights < ${min_nights}
-		AND a.price < ${max_price} AND a.price > ${min_price}
-	GROUP BY a.city
-	HAVING COUNT(*) > ${num_airbnb}
-)
-SELECT c.event_subcategory, COUNT(*) AS count
-FROM Concert c
-JOIN temp t
-	ON c.title LIKE CONCAT('%', t.artist, '%')
-JOIN temp2 t2
-	ON t2.city = c.city
-WHERE c.event_category = 'MUSIC'
-GROUP BY c.event_subcategory
-ORDER BY COUNT(*) DESC;
-`, (err, data) => {
-    if (err || data.length === 0) {
-      console.log(err);
-      res.json({});
-    } else {
-      res.status(200).json(data);
-    }
   });
 }
 
@@ -290,7 +234,7 @@ const getArtistsStateInitial = async function (req, res) {
     JOIN temp2 t2 ON t2.city = a.city
     LEFT JOIN temp t ON t2.title LIKE CONCAT('%', t.artist, '%')
     GROUP BY t.artist, t.title
-    ORDER BY t.artist DESC, t.streams DESC;
+    ORDER BY t.artist DESC, t.streams DESC
   `;
 
   pool.query(query, [`${artistPrefix}%`, state], (err, data) => {
@@ -540,7 +484,6 @@ module.exports = {
   topCities,
   topArtists,
   getAirbnb,
-  getAirbnb1,
   getSubcategories,
   getArtistsStateInitial,
   getConcertsAirbnbCount,
