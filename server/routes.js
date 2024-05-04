@@ -62,6 +62,28 @@ const hello = async function (req, res) {
   return res.status(200).json({ message: 'pool is successful!' });
 }
 
+// get latitude
+
+const getLatitudeLongitude = async function (req, res) {
+
+  const query = `
+    SELECT latitude, longitude
+FROM airbnblatlong1
+LIMIT 10;
+  `
+  pool.query(query, (err, data) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+    if (data.rows.length === 0) {
+      return res.status(404).json({ message: "No data found for the given parameters." });
+    }
+    res.status(200).json(data.rows);
+  });
+
+}
+
 // get /top_cities - WORKS
 const topCities = async function (req, res) {
   const limit = parseInt(req.query.limit);
@@ -503,6 +525,7 @@ LIMIT $1;
 // The exported functions, which can be accessed in index.js.
 module.exports = {
   topCities,
+  getLatitudeLongitude,
   topArtists,
   getAirbnb,
   getAirbnb1,
