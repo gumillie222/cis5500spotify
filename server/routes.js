@@ -240,27 +240,15 @@ const getArtistsStateInitial = async function (req, res) {
   const artistPrefix = req.query.artistPrefix || 'Taylor';
 
   const query = `
-    WITH temp AS (
-      SELECT ch.artist AS artist, ch.title AS title, SUM(chartmain.streams) AS streams
-      FROM charturl ch
-      JOIN chartmain ON ch.url = chartmain.url
-      WHERE ch.artist LIKE CONCAT('${artistPrefix}', '%')
-      GROUP BY ch.artist, ch.title
-    ),
-    temp2 AS (
-        SELECT c.artist AS artist, concertaddr.city AS city
-        FROM concertmain c
-        JOIN concertaddr ON c.formatted_address = concertaddr.formatted_address
-        WHERE concertaddr.state = '${state}'
-    )
-    SELECT t.artist, t.title, COUNT(a.name) AS count
+    SELECT cc.artist, cc.title, COUNT(a.name)
     FROM airbnbmain a
     JOIN airbnbhost ON a.host_id = airbnbhost.host_id
-    JOIN temp2 t2 ON t2.city = a.city
-    INNER JOIN temp t ON t2.artist = t.artist
-    WHERE t.artist <> ''
-    GROUP BY t.artist, t.title
-    ORDER BY t.artist DESC
+    JOIN chart_concert cc ON cc.city = a.city
+    WHERE cc.artist <> ''
+        AND cc.state = '${state}'
+        AND cc.artist LIKE CONCAT('${artistPrefix}', '%')
+    GROUP BY cc.artist, cc.title
+    ORDER BY cc.artist DESC;
     `;
 
   pool.query(query, (err, data) => {
