@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { TextField, Button, Container, Typography, Box, List, ListItem } from '@mui/material';
+import { TextField, Button, Container, Typography, Box,
+    Table, TableBody, TableCell, TableContainer,
+    TableHead, TableRow, Paper } from '@mui/material';
 
 
 
@@ -39,21 +41,36 @@ const GetavgAirbnbPrice = () => {
                     Search Results:
                 </Typography>
 
-                <Box sx={{ height: 300, overflow: 'auto' }}>
-                    {results.length > 0 ? (
-                        <List>
-                            {results.map((result, index) => (
-                                <ListItem key={index}>
-                                    {JSON.stringify(result)}
-                                </ListItem>
-                            ))}
-                        </List>
-                    ) : (
-                        <Typography>No results found</Typography>
-                    )}
-                </Box>
+                <TableContainer component={Paper} sx={{ height: 400, overflow: 'auto' }}>
+                    <Table stickyHeader>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>City</TableCell>
+                                <TableCell>Room Type</TableCell>
+                                <TableCell>Price</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {results.length > 0 ? (
+                                results.map((result, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell>{result.city}</TableCell>
+                                        <TableCell>{result.room_type}</TableCell>
+                                        <TableCell>{result.price}</TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={3}>
+                                        <Typography>No results found</Typography>
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             </Box>
-        </Container>
+        </Container> 
     );
 };
 
