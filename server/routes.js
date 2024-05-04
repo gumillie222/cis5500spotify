@@ -211,7 +211,7 @@ const getSubcategories = async function (req, res) {
   });
 }
 
-// get /artists_by_state_and_initial -- NEED TO CHECK, COULDN'T RUN
+// get /artists_by_state_initial -- NEED TO CHECK, COULDN'T RUN
 const getArtistsStateInitial = async function (req, res) {
 
   const state = req.query.state || 'CA';
@@ -219,25 +219,29 @@ const getArtistsStateInitial = async function (req, res) {
 
   const query = `
     WITH temp AS (
-      SELECT ch.artist AS artist, ch.title AS title, SUM(ch.streams) AS streams
-      FROM Chart_small ch
-      WHERE ch.artist LIKE ?
+      SELECT ch.artist AS artist, ch.title AS title, SUM(chartmain.streams) AS streams
+      FROM charturl ch
+      JOIN chartmain ON ch.url = chartmain.url
+      WHERE ch.artist LIKE CONCAT(${artistPrefix}, '%')
       GROUP BY ch.artist, ch.title
     ),
     temp2 AS (
-      SELECT c.title AS title, c.city AS city
-      FROM Concert c
-      WHERE c.state= ?
+        SELECT c.artist AS artist, concertaddr.city AS city
+        FROM concertmain c
+        JOIN concertaddr ON c.formatted_address = concertaddr.formatted_address
+        WHERE concertaddr.state = ${state}
     )
-    SELECT t.artist, t.title, COUNT(a.name) AS airbnb_count
-    FROM Airbnb a
+    SELECT t.artist, t.title, COUNT(a.name)
+    FROM airbnbmain a
+    JOIN airbnbhost ON a.host_id = airbnbhost.host_id
     JOIN temp2 t2 ON t2.city = a.city
-    LEFT JOIN temp t ON t2.title LIKE CONCAT('%', t.artist, '%')
+    INNER JOIN temp t ON t2.artist = t.artist
+    WHERE t.artist IS NOT NULL AND t.artist <> ''
     GROUP BY t.artist, t.title
-    ORDER BY t.artist DESC, t.streams DESC
-  `;
+    ORDER BY t.artist DESC
+    `;
 
-  pool.query(query, [`${artistPrefix}%`, state], (err, data) => {
+  pool.query(query, (err, data) => {
     if (err) {
       console.log(err);
       return res.status(500).json({ error: "Internal server error" });
@@ -245,11 +249,11 @@ const getArtistsStateInitial = async function (req, res) {
     if (data.length === 0) {
       return res.status(404).json({ message: "No data found for the given parameters." });
     }
-    res.status(200).json(data);
+    res.status(200).json(data.rows);
   });
 }
 
-// get /all_concerts_airbnb_count
+// get /concerts_airbnb_count
 // {"title":"Coors Field Event Parking","datetime_utc":"2023-08-02T04:00:00.000Z","num":5362}
 const getConcertsAirbnbCount = async function (req, res) {
 
@@ -258,17 +262,18 @@ const getConcertsAirbnbCount = async function (req, res) {
   const query = `
     WITH numAirbnb AS (
       SELECT a.city AS city, COUNT(a.name) AS num
-      FROM Airbnb a
+      FROM airbnbmain a
       GROUP BY a.city
     )
-    SELECT DISTINCT c.title, c.datetime_utc, n.num
-    FROM Concert c
-    JOIN numAirbnb n ON c.city = n.city
-    ORDER BY c.datetime_utc ASC
-    LIMIT ?
+    SELECT DISTINCT c.title, c.day, c.month, c.year, c.time, n.num
+    FROM concertmain c
+    JOIN concertaddr ca ON c.formatted_address = ca.formatted_address
+    JOIN numAirbnb n ON ca.city = n.city
+    ORDER BY c.year, c.month, c.day, c.time
+    LIMIT ${limit}
   `;
 
-  pool.query(query, [limit], (err, data) => {
+  pool.query(query, (err, data) => {
     if (err) {
       console.log(err);
       return res.status(500).json({ error: "Internal server error" });
@@ -276,7 +281,7 @@ const getConcertsAirbnbCount = async function (req, res) {
     if (data.length === 0) {
       return res.status(404).json({ message: "No data found for the given parameters." });
     }
-    res.status(200).json(data);
+    res.status(200).json(data.rows);
   });
 }
 
