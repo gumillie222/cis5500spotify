@@ -2,10 +2,15 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { TextField, Button } from '@mui/material';
 import TopCities from './Components/TopCities';
+<<<<<<< Updated upstream
 import TopArtists from './Components/TopArtists';
 import GetavgPrice from './Components/GetavgPrice';
 import GetavgAirbnbPrice from './Components/GetavgAirbnbPrice';
 
+=======
+import GetavgPrice from './Components/GetavgPrice'
+import GetAirbnb from './Components/GetAirbnb'
+>>>>>>> Stashed changes
 
 const SearchAndAutoFetch = () => {
     const [autoFetchedData, setAutoFetchedData] = useState(null);
@@ -65,8 +70,12 @@ const SearchAndAutoFetch = () => {
             <div>
                 <TopCities />
                 <GetavgPrice />
+<<<<<<< Updated upstream
                 <TopArtists />
                 <GetavgAirbnbPrice />
+=======
+                <GetAirbnb />
+>>>>>>> Stashed changes
 
                 <TextField
                     value={two}
