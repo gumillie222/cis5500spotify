@@ -41,7 +41,7 @@ app.get('/top_cities_on_concerts', routes.getCitiesBasedOnConcerts);
 
 app.get('/month_popularity', routes.getMonthPopularity);
 
-app.get('/events_and_accomodations', routes.getEventsAccomodations);
+app.get('/events_and_accommodations', routes.getEventsAccomodations);
 
 app.get('/most_improved_songs', routes.getMostImprovedSongs);
 

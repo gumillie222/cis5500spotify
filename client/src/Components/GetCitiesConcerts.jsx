@@ -21,7 +21,7 @@ const GetCitiesConcerts = () => {
         <Container>
             <Box my={4}>
                 <Typography variant="h4" component="h2">
-                    Get the Top Cities Based on Number of Concerts
+                    Gets the number of events in subcategory fulfiling criteria
                 </Typography>
 
                 <Box my={2}>

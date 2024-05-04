@@ -74,16 +74,16 @@ const GetSubcategories = () => {
                         value={nightsMin}
                         onChange={(e) => setNightsMin(e.target.value)}
                     />
-                    
+
                 </Box>
-                    
-                
+
+
                 <Box my={2}>
                     <Button variant="contained" color="primary" onClick={search} fullWidth>
                         Search
                     </Button>
                 </Box>
-                
+
 
                 <Typography variant="h5" component="h3">
                     Search Results

@@ -33,7 +33,7 @@ const GetMonthPopularity = () => {
                         ))}
                     </ul>
                 ) : (
-                    <p>No results found</p>
+                    <p>Waiting for query result...</p>
                 )}
             </div>
         </div>

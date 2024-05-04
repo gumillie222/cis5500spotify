@@ -29,7 +29,7 @@ const GetAirbnb = () => {
         <Container>
             <Box my={4}>
                 <Typography variant="h4" component="h2">
-                    Get Airbnbs in Cities of Top Artists
+                    Get Airbnbs in Cities of Top Artists (top 10)
                 </Typography>
 
                 <Box display="flex" flexDirection="row" gap={2} my={2}>
@@ -64,7 +64,7 @@ const GetAirbnb = () => {
                         Search
                     </Button>
                 </Box>
-                
+
 
                 <Typography variant="h5" component="h3">
                     Search Results

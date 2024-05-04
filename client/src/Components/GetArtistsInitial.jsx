@@ -12,12 +12,7 @@ const GetArtistsInitial = () => {
     const [state, setState] = useState('');
 
     const search = async () => {
-        const res = await axios.get(`http://localhost:8081/artists_by_state_initial`, {
-            params: {
-                state,
-                prefix,
-            },
-        });
+        const res = await axios.get(`http://localhost:8081/artists_by_state_initial?state=${state}&artistPrefix=${prefix}`);
         setResults(res.data);
     };
 
@@ -41,7 +36,7 @@ const GetArtistsInitial = () => {
                         onChange={(e) => setState(e.target.value)}
                         fullWidth
                     />
-                    
+
                 </Box>
 
                 <Box my={2}>

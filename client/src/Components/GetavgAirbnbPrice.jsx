@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { TextField, Button, Container, Typography, Box,
+import {
+    TextField, Button, Container, Typography, Box,
     Table, TableBody, TableCell, TableContainer,
-    TableHead, TableRow, Paper } from '@mui/material';
+    TableHead, TableRow, Paper
+} from '@mui/material';
 
 
 
@@ -70,7 +72,7 @@ const GetavgAirbnbPrice = () => {
                     </Table>
                 </TableContainer>
             </Box>
-        </Container> 
+        </Container>
     );
 };
 
