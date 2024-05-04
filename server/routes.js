@@ -74,7 +74,7 @@ const topCities = async function (req, res) {
       FROM ConcertMain cm
       JOIN ConcertAddr ca
       ON ca.formatted_address = cm.formatted_address) c
-    INNER JOIN (SELECT artist
+    INNER JOIN (SELECT cu.artist
       FROM ChartMain chm
       JOIN charturl cu ON chm.url = cu.url) ch
     ON c.artist = ch.artist
@@ -104,7 +104,7 @@ const topArtists = async function (req, res) {
   }
   pool.query(`
     SELECT ch.artist
-    FROM (SELECT artist, chart_rank, streams
+    FROM (SELECT cu.artist, chart_rank, streams
       FROM ChartMain chm
       JOIN charturl cu ON chm.url = cu.url) ch
     WHERE ch.chart_rank <= ${position}
@@ -139,8 +139,8 @@ const getAirbnb = async function (req, res) {
       ON c.formatted_address = concertaddr.formatted_address
     JOIN charturl ON c.artist = charturl.artist
     JOIN chartmain ON charturl.url = chartmain.url
-    WHERE a.price < ${priceMin} AND a.price > ${priceMax}
-      AND a.number_of_review > ${numReviews}
+    WHERE a.price > ${priceMin} AND a.price < ${priceMax}
+      AND a.number_of_reviews > ${numReviews}
       AND chartmain.chart_rank <= ${chartRank}
     ORDER BY a.price DESC, concertaddr.city;
 `, (err, data) => {
@@ -175,7 +175,7 @@ const getSubcategories = async function (req, res) {
     JOIN chartmain cm ON ch.url = cm.url
     WHERE cm.chart_rank <= ${rank}
     GROUP BY ch.artist
-    HAVING COUNT(*) > ${times})
+    HAVING COUNT(*) > ${times} OR SUM(cm.streams) > ${streams})
       UNION
     (SELECT ch2.artist
     FROM charturl ch2
@@ -207,11 +207,11 @@ const getSubcategories = async function (req, res) {
     if (data.length === 0) {
       return res.status(404).json({ message: "No data found for the given parameters." });
     }
-    res.status(200).json(data);
+    res.status(200).json(data.rows);
   });
 }
 
-// get /artists_by_state_initial -- NEED TO CHECK, COULDN'T RUN
+// get /artists_by_state_initial -- WORK
 const getArtistsStateInitial = async function (req, res) {
 
   const state = req.query.state || 'CA';
