@@ -44,6 +44,7 @@ const GetMonthPopularity = () => {
                     <Table stickyHeader>
                         <TableHead>
                             <TableRow>
+                                <TableCell>Artist</TableCell>
                                 <TableCell>Month</TableCell>
                                 <TableCell>Number of Concerts</TableCell>
                             </TableRow>
@@ -52,6 +53,7 @@ const GetMonthPopularity = () => {
                             {results.length > 0 ? (
                                 results.map((result, index) => (
                                     <TableRow key={index}>
+                                        <TableCell>{result.artist}</TableCell>
                                         <TableCell>{result.month}</TableCell>
                                         <TableCell>{result.concert_count}</TableCell>
                                     </TableRow>
