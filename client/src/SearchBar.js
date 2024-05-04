@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { TextField, Button } from '@mui/material';
 import TopCities from './Components/TopCities';
-import GetavgPrice from './Components/GetavgPrice'
+import TopArtists from './Components/TopArtists';
+import GetavgPrice from './Components/GetavgPrice';
+import GetavgAirbnbPrice from './Components/GetavgAirbnbPrice';
+
 
 const SearchAndAutoFetch = () => {
     const [autoFetchedData, setAutoFetchedData] = useState(null);
@@ -62,6 +65,8 @@ const SearchAndAutoFetch = () => {
             <div>
                 <TopCities />
                 <GetavgPrice />
+                <TopArtists />
+                <GetavgAirbnbPrice />
 
                 <TextField
                     value={two}

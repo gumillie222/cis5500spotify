@@ -319,8 +319,12 @@ const getAvgAirbnbPrice = async function (req, res) {
     GROUP BY a.city, a.room_type
     HAVING AVG(a.price) > 0
     ORDER BY AVG(a.price)
+<<<<<<< Updated upstream
     LIMIT ${limit}
 
+=======
+    LIMIT $1
+>>>>>>> Stashed changes
   `;
 
   pool.query(query, (err, data) => {
