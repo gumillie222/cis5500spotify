@@ -164,8 +164,9 @@ const getAirbnb1 = async function (req, res) {
 
 // get /airbnb -- NEED TO CHECK AGAIN, COULDN'T RUN
 const getAirbnb = async function (req, res) {
+
   const priceMin = parseInt(req.query.price_min) || 0;
-  const priceMax = parseInt(req.query.price_max);
+  const priceMax = parseInt(req.query.price_max) || 2000;
   const numReviews = parseInt(req.query.num_reviews) || 0;
   const chartRank = parseInt(req.query.chart_rank);
   if (isNaN(priceMax) || isNaN(chartRank)) {
@@ -187,10 +188,12 @@ const getAirbnb = async function (req, res) {
 `, (err, data) => {
     if (err || data.length === 0) {
       console.log(err);
-      res.json({});
-    } else {
-      res.json(data);
+      return res.status(500).json({ error: "Internal server error" });
     }
+    if (data.length === 0) {
+      return res.status(404).json({ message: "No data found for the given parameters." });
+    }
+    res.status(200).json(data);
   });
 }
 
