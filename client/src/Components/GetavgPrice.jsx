@@ -5,10 +5,10 @@ import { TextField, Button } from '@mui/material';
 
 const AvgPrice = () => {
     const [results, setResults] = useState([]);
-    const [param1, setParam1] = useState('');
+    const [limit, setLimit] = useState('');
 
     const search = async () => {
-        const res = await axios.get(`http://localhost:8081/average_prices?limit=${param1}`);
+        const res = await axios.get(`http://localhost:8081/average_prices?limit=${limit}`);
         setResults(res.data);
     };
 
@@ -16,9 +16,9 @@ const AvgPrice = () => {
         <div>
             <h2>Get avg prices:</h2>
             <TextField
-                value={param1}
-                onChange={(e) => setParam1(e.target.value)}
-                placeholder="Search One"
+                value={limit}
+                onChange={(e) => setLimit(e.target.value)}
+                placeholder="set number of results"
             />
             <Button variant="contained" onClick={search}>
                 Search

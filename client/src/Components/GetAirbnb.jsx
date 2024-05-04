@@ -17,7 +17,7 @@ const GetAirbnb = () => {
 
     return (
         <div>
-            <h2>Get Airbnbs with Your Own Parameters:</h2>
+            <h2>Get Airbnbs in Cities of Top Artists:</h2>
             <TextField
                 value={priceMin}
                 onChange={(e) => setPriceMin(e.target.value)}

@@ -3,22 +3,22 @@ import axios from 'axios';
 import { TextField, Button } from '@mui/material';
 
 
-const TopCities = () => {
+const GetEventsAccomodations = () => {
     const [results, setResults] = useState([]);
-    const [limit, setLimit] = useState('');
+    const [city, setCity] = useState('');
 
     const search = async () => {
-        const res = await axios.get(`http://localhost:8081/top_cities?limit=${limit}`);
+        const res = await axios.get(`http://localhost:8081/events_and_accommodations?city=${city}`);
         setResults(res.data);
     };
 
     return (
         <div>
-            <h2>Get top cities:</h2>
+            <h2>Get a Popular Event's Category and the Number of Events Based on City:</h2>
             <TextField
-                value={limit}
-                onChange={(e) => setLimit(e.target.value)}
-                placeholder="set number of results"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="set city"
             />
             <Button variant="contained" onClick={search}>
                 Search
@@ -43,4 +43,4 @@ const TopCities = () => {
 
 }
 
-export default TopCities;
+export default GetEventsAccomodations;

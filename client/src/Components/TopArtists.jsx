@@ -5,12 +5,12 @@ import { TextField, Button } from '@mui/material';
 
 const TopArtists = () => {
     const [results, setResults] = useState([]);
-    const [param1, setParam1] = useState('');
-    const [param2, setParam2] = useState('');
+    const [limit, setLimit] = useState('');
+    const [pos, setPos] = useState('');
 
 
     const search = async () => {
-        const res = await axios.get(`http://localhost:8081/top_artists?limit=${param1}&position=${param2}`);
+        const res = await axios.get(`http://localhost:8081/top_artists?limit=${limit}&position=${pos}`);
         setResults(res.data);
     };
 
@@ -18,14 +18,14 @@ const TopArtists = () => {
         <div>
             <h2>Get top artists:</h2>
             <TextField
-                value={param1}
-                onChange={(e) => setParam1(e.target.value)}
-                placeholder="Limit"
+                value={limit}
+                onChange={(e) => setLimit(e.target.value)}
+                placeholder="set number of results"
             />
             <TextField
-                value={param2}
-                onChange={(e) => setParam2(e.target.value)}
-                placeholder="Position"
+                value={pos}
+                onChange={(e) => setPos(e.target.value)}
+                placeholder="set maximum ranking"
             />
             <Button variant="contained" onClick={search}>
                 Search

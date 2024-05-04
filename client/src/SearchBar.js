@@ -2,15 +2,17 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { TextField, Button } from '@mui/material';
 import TopCities from './Components/TopCities';
-<<<<<<< Updated upstream
 import TopArtists from './Components/TopArtists';
 import GetavgPrice from './Components/GetavgPrice';
 import GetavgAirbnbPrice from './Components/GetavgAirbnbPrice';
-
-=======
-import GetavgPrice from './Components/GetavgPrice'
-import GetAirbnb from './Components/GetAirbnb'
->>>>>>> Stashed changes
+import GetAirbnb from './Components/GetAirbnb';
+import Subcategories from './Components/GetSubcategories';
+import ArtistsStateInitial from './Components/GetArtistsInitial';
+import ConcertsAirbnbCount from './Components/GetConcertsAirbnbCount';
+import CitiesConcerts from './Components/GetCitiesConcerts';
+import MonthPopularity from './Components/GetMonthPopularity';
+import EventsAccomodations from './Components/GetEventsAccomodations';
+import MostImproved from './Components/GetMostImproved';
 
 const SearchAndAutoFetch = () => {
     const [autoFetchedData, setAutoFetchedData] = useState(null);
@@ -69,13 +71,19 @@ const SearchAndAutoFetch = () => {
             {/* Manual search fields */}
             <div>
                 <TopCities />
-                <GetavgPrice />
-<<<<<<< Updated upstream
+                
                 <TopArtists />
-                <GetavgAirbnbPrice />
-=======
                 <GetAirbnb />
->>>>>>> Stashed changes
+                <Subcategories />
+                <ArtistsStateInitial />
+                <ConcertsAirbnbCount />
+                <GetavgAirbnbPrice />
+                <CitiesConcerts />
+                <MonthPopularity />
+                <EventsAccomodations />
+                <MostImproved />
+                <GetavgPrice />
+                
 
                 <TextField
                     value={two}

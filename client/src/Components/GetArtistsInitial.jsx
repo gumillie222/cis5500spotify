@@ -3,22 +3,28 @@ import axios from 'axios';
 import { TextField, Button } from '@mui/material';
 
 
-const TopCities = () => {
+const GetArtistsInitial = () => {
     const [results, setResults] = useState([]);
-    const [limit, setLimit] = useState('');
+    const [prefix, setPrefix] = useState('');
+    const [state, setState] = useState('');
 
     const search = async () => {
-        const res = await axios.get(`http://localhost:8081/top_cities?limit=${limit}`);
+        const res = await axios.get(`http://localhost:8081/artists_by_state_initial?state=${state}&prefix=${prefix}`);
         setResults(res.data);
     };
 
     return (
         <div>
-            <h2>Get top cities:</h2>
+            <h2>Get Artists Performing in a State:</h2>
             <TextField
-                value={limit}
-                onChange={(e) => setLimit(e.target.value)}
-                placeholder="set number of results"
+                value={prefix}
+                onChange={(e) => setPrefix(e.target.value)}
+                placeholder="set prefix of artist"
+            />
+            <TextField
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                placeholder="set state"
             />
             <Button variant="contained" onClick={search}>
                 Search
@@ -43,4 +49,4 @@ const TopCities = () => {
 
 }
 
-export default TopCities;
+export default GetArtistsInitial;
