@@ -293,11 +293,12 @@ const getAvgAirbnbPrice = async function (req, res) {
 
   const query = `
     SELECT a.city, a.room_type, AVG(a.price) AS price
-    FROM Airbnb a
-    GROUP BY a.city, a.room_type
-    HAVING AVG(a.price) > 0
-    ORDER BY AVG(a.price) ASC
-    LIMIT ?
+FROM airbnbmain a
+GROUP BY a.city, a.room_type
+HAVING AVG(a.price) > 0
+ORDER BY AVG(a.price)
+LIMIT $1
+
   `;
 
   pool.query(query, [limit], (err, data) => {
@@ -308,7 +309,7 @@ const getAvgAirbnbPrice = async function (req, res) {
     if (data.length === 0) {
       return res.status(404).json({ message: "No data found for the given parameters." });
     }
-    res.status(200).json(data);
+    res.status(200).json(data.rows);
   });
 }
 
@@ -319,12 +320,13 @@ const getCitiesBasedOnConcerts = async function (req, res) {
   const limit = parseInt(req.query.limit) || 100;
 
   const query = `
-    SELECT c.city, COUNT(c.event_id) AS concert_count
-    FROM Concert c
-    JOIN Chart_small ch ON c.title LIKE CONCAT('%', ch.artist, '%')
-    GROUP BY c.city
+    SELECT ca.city, COUNT(c.event_id) AS concert_count
+    FROM concertmain c
+    JOIN concertaddr ca ON c.formatted_address = ca.formatted_address
+    JOIN charturl ch ON c.title LIKE CONCAT('%', ch.artist, '%')
+    GROUP BY ca.city
     ORDER BY COUNT(c.event_id) DESC
-    LIMIT ?
+    LIMIT $1
   `;
 
   pool.query(query, [limit], (err, data) => {
@@ -332,37 +334,36 @@ const getCitiesBasedOnConcerts = async function (req, res) {
       console.log(err);
       return res.status(500).json({ error: "Internal server error" });
     }
-    if (data.length === 0) {
+    if (data.rows.length === 0) {
       return res.status(404).json({ message: "No data found for the given parameters." });
     }
-    res.status(200).json(data);
+    res.status(200).json(data.rows);
   });
 }
 
-// get /month_popularity -- WORKS, but suspicious answer
+// get /month_popularity -- WORKS, but suspicious answer (not suspicious but just because not enough data)
 // {"month":"8","concert_count":3580}
 const getMonthPopularity = async function (req, res) {
-
   const artist = req.query.artist || 'Taylor';
 
   const query = `
     SELECT c.month, COUNT(c.event_id) AS concert_count
-    FROM Concert c
-    JOIN Chart_small ch ON c.title LIKE CONCAT('%', ch.artist, '%')
-    WHERE ch.artist LIKE ?
+    FROM concertmain c
+    JOIN charturl ch ON c.title LIKE CONCAT('%', ch.artist, '%')
+    WHERE ch.artist LIKE $1
     GROUP BY c.month
     ORDER BY concert_count DESC;
   `;
 
-  pool.query(query, [`${artist}%`], (err, data) => {
+  pool.query(query, [`%${artist}%`], (err, data) => {
     if (err) {
-      console.log(err);
+      console.error(err);
       return res.status(500).json({ error: "Internal server error" });
     }
-    if (data.length === 0) {
+    if (data.rows.length === 0) {
       return res.status(404).json({ message: "No data found for the given parameters." });
     }
-    res.status(200).json(data);
+    res.status(200).json(data.rows);
   });
 }
 
@@ -374,29 +375,29 @@ const getEventsAccomodations = async function (req, res) {
 
   const query = `
   WITH AirbnbCount AS (
-      SELECT a.city AS city, COUNT(a.id) AS numAirbnb
-      FROM Airbnb a
-      GROUP BY a.city
-  ),
-  EventCounts AS (
-      SELECT c.city, c.event_category, COUNT(c.event_id) AS event_count
-      FROM Concert c
-      GROUP BY c.city, c.event_category
-  ),
-  MaxEventCounts AS (
-      SELECT city, MAX(event_count) AS max_event_count
-      FROM EventCounts
-      GROUP BY city
-  ),
-  MostPopularEventCategory AS (
-      SELECT ec.city, ec.event_category
-      FROM EventCounts ec
-      INNER JOIN MaxEventCounts mex ON ec.city=mex.city AND ec.event_count=mex.max_event_count
-  )
-  SELECT mpec.city, mpec.event_category, ac.numAirbnb
-  FROM MostPopularEventCategory mpec
-  JOIN AirbnbCount ac ON mpec.city=ac.city
-  WHERE ac.city = ?
+   SELECT a.city AS city, COUNT(a.id) AS numAirbnb
+   FROM airbnbmain a
+   GROUP BY a.city
+),
+EventCounts AS (
+   SELECT ca.city, c.event_category, COUNT(c.event_id) AS event_count
+   FROM concertmain c JOIN concertaddr ca ON c.formatted_address = ca.formatted_address
+   GROUP BY ca.city, c.event_category
+),
+MaxEventCounts AS (
+   SELECT city, MAX(event_count) AS max_event_count
+   FROM EventCounts
+   GROUP BY city
+),
+MostPopularEventCategory AS (
+   SELECT ec.city, ec.event_category
+   FROM EventCounts ec
+   INNER JOIN MaxEventCounts mex ON ec.city=mex.city AND ec.event_count=mex.max_event_count
+)
+SELECT mpec.city, mpec.event_category, ac.numAirbnb
+FROM MostPopularEventCategory mpec
+JOIN AirbnbCount ac ON mpec.city=ac.city
+WHERE ac.city = $1;
   `;
 
   pool.query(query, [`${city}`], (err, data) => {
@@ -404,10 +405,10 @@ const getEventsAccomodations = async function (req, res) {
       console.log(err);
       return res.status(500).json({ error: "Internal server error" });
     }
-    if (data.length === 0) {
+    if (data.rows.length === 0) {
       return res.status(404).json({ message: "No data found for the given parameters." });
     }
-    res.status(200).json(data);
+    res.status(200).json(data.rows);
   });
 }
 
@@ -415,41 +416,44 @@ const getEventsAccomodations = async function (req, res) {
 // {"title":"'Till I Collapse","improved":39}
 const getMostImprovedSongs = async function (req, res) {
 
-  const year = req.query.year || '2017';
+  //  const year = req.query.year || '2017';
   const limit = parseInt(req.query.limit) || 100;
 
   const query = `
   WITH temp AS (
-      SELECT ch.title, COUNT(ch.title) AS down
-      FROM Chart_small ch
-      WHERE ch.year = ? AND ch.trend = 'MOVE_DOWN'
-      GROUP BY ch.title
-  ),
-  temp1 AS (
-      SELECT ch.title, COUNT(ch.title) AS up
-      FROM Chart_small ch
-      WHERE ch.year = ? AND ch.trend = 'MOVE_UP'
-      GROUP BY ch.title
-  )
-  SELECT ch.title, (COALESCE(t1.up, 0) - COALESCE(t.down, 0)) AS improved
-  FROM Chart_small ch
-  LEFT JOIN temp t ON ch.title = t.title
-  LEFT JOIN temp1 t1 ON ch.title = t1.title
-  WHERE ch.year = ?
-  GROUP BY ch.title
-  ORDER BY improved DESC
-  LIMIT ?;
+   SELECT ch.title, COUNT(*) AS down
+   FROM charturl ch
+   JOIN chartmain c ON ch.url = c.url
+   WHERE c.trend = 'MOVE_DOWN'
+   GROUP BY ch.title
+),
+temp1 AS (
+   SELECT ch.title, COUNT(*) AS up
+   FROM charturl ch
+   JOIN chartmain c ON ch.url = c.url
+   WHERE c.trend = 'MOVE_UP'
+   GROUP BY ch.title
+)
+SELECT ch.title, (COALESCE(t1.up, 0) - COALESCE(t.down, 0)) AS improved
+FROM charturl ch
+JOIN chartmain c ON ch.url = c.url
+LEFT JOIN temp t ON ch.title = t.title
+LEFT JOIN temp1 t1 ON ch.title = t1.title
+GROUP BY ch.title, t1.up, t.down
+ORDER BY improved DESC
+LIMIT $1;
+;
   `;
 
-  pool.query(query, [year, year, year, limit], (err, data) => {
+  pool.query(query, [limit], (err, data) => {
     if (err) {
       console.log(err);
       return res.status(500).json({ error: "Internal server error" });
     }
-    if (data.length === 0) {
+    if (data.rows.length === 0) {
       return res.status(404).json({ message: "No data found for the given parameters." });
     }
-    res.status(200).json(data);
+    res.status(200).json(data.rows);
   });
 }
 
@@ -461,10 +465,10 @@ const getAveragePrice = async function (req, res) {
 
   const query = `
     SELECT a.neighborhood, AVG(a.price) AS price
-    FROM Airbnb a
-    GROUP BY a.neighborhood
-    ORDER BY AVG(a.price) DESC, a.neighborhood
-    LIMIT ?
+FROM airbnbmain a
+GROUP BY a.neighborhood
+ORDER BY AVG(a.price) DESC, a.neighborhood
+LIMIT $1;
   `;
 
   pool.query(query, [limit], (err, data) => {
@@ -475,7 +479,7 @@ const getAveragePrice = async function (req, res) {
     if (data.length === 0) {
       return res.status(404).json({ message: "No data found for the given parameters." });
     }
-    const formattedData = data.map(row => ({
+    const formattedData = data.rows.map(row => ({
       neighborhood: row.neighborhood,
       average_price: parseFloat(row.price.toFixed(2)) // Formatting the price to two decimal places
     }));
