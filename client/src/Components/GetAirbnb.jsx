@@ -29,7 +29,7 @@ const GetAirbnb = () => {
         <Container>
             <Box my={4}>
                 <Typography variant="h4" component="h2">
-                    Get Airbnbs in Cities of Top Artists (top 10)
+                    Get Airbnbs in Cities Where Top Artists Have Performed
                 </Typography>
 
                 <Box display="flex" flexDirection="row" gap={2} my={2}>
@@ -74,10 +74,11 @@ const GetAirbnb = () => {
                     <Table stickyHeader>
                         <TableHead>
                             <TableRow>
-                                <TableCell>Name</TableCell>
+                                <TableCell>Airbnb Listing Name</TableCell>
                                 <TableCell>City</TableCell>
                                 <TableCell>Price</TableCell>
-                                <TableCell>Number of Reviews</TableCell>
+                                <TableCell>Concert Title</TableCell>
+                                <TableCell>Concert Artist</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -87,7 +88,8 @@ const GetAirbnb = () => {
                                         <TableCell>{result.name}</TableCell>
                                         <TableCell>{result.city}</TableCell>
                                         <TableCell>{result.price}</TableCell>
-                                        <TableCell>{result.number_of_reviews}</TableCell>
+                                        <TableCell>{result.title}</TableCell>
+                                        <TableCell>{result.artist}</TableCell>
                                     </TableRow>
                                 ))
                             ) : (
