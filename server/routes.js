@@ -202,7 +202,7 @@ const getSubcategories = async function (req, res) {
     (SELECT ch2.artist
     FROM charturl ch2
     JOIN chartmain cm ON ch2.url = cm.url
-    WHERE cm.trend = 'NEW_ENTRY')
+    WHERE cm.trend = 'NEW_ENTRY' AND cm.chart_rank <= 50)
   ),
   temp2 AS (
       SELECT a.city
@@ -245,8 +245,8 @@ const getArtistsStateInitial = async function (req, res) {
     JOIN airbnbhost ON a.host_id = airbnbhost.host_id
     JOIN chart_concert cc ON cc.city = a.city
     WHERE cc.artist <> ''
-        AND cc.state = '${state}'
-        AND cc.artist LIKE CONCAT('${artistPrefix}', '%')
+        AND cc.state iLIKE '${state}'
+        AND cc.artist iLIKE CONCAT('${artistPrefix}', '%')
     GROUP BY cc.artist, cc.title
     ORDER BY cc.artist DESC;
     `;
@@ -384,10 +384,10 @@ const getEventsAccomodations = async function (req, res) {
   const city = req.query.city || 'Los Angeles';
 
   const query = `
-  SELECT mpec.event_subcategory, mpec.event_count, ac.numAirbnb
-  FROM MostPopularEventCategory mpec
-  JOIN AirbnbCount ac ON mpec.city = ac.city
-  WHERE ac.city LIKE $1;
+    SELECT mpec.event_subcategory, mpec.event_count, ac.numAirbnb
+    FROM MostPopularEventCategory mpec
+    JOIN AirbnbCount ac ON mpec.city = ac.city
+    WHERE ac.city iLIKE $1;
   `;
 
   pool.query(query, [`${city}`], (err, data) => {
@@ -408,32 +408,24 @@ const getEventsAccomodations = async function (req, res) {
 const getMostImprovedSongs = async function (req, res) {
 
   //  const year = req.query.year || '2017';
-  const limit = parseInt(req.query.limit) || 100;
+  const limit = parseInt(req.query.limit) || 10;
 
   const query = `
-  WITH temp AS (
-   SELECT ch.title, COUNT(*) AS down
-   FROM charturl ch
-   JOIN chartmain c ON ch.url = c.url
-   WHERE c.trend = 'MOVE_DOWN'
-   GROUP BY ch.title
-),
-temp1 AS (
-   SELECT ch.title, COUNT(*) AS up
-   FROM charturl ch
-   JOIN chartmain c ON ch.url = c.url
-   WHERE c.trend = 'MOVE_UP'
-   GROUP BY ch.title
-)
-SELECT ch.title, (COALESCE(t1.up, 0) - COALESCE(t.down, 0)) AS improved
-FROM charturl ch
-JOIN chartmain c ON ch.url = c.url
-LEFT JOIN temp t ON ch.title = t.title
-LEFT JOIN temp1 t1 ON ch.title = t1.title
-GROUP BY ch.title, t1.up, t.down
-ORDER BY improved DESC
-LIMIT $1;
-;
+    WITH TrendCounts AS (
+        SELECT
+            ch.title,
+            COUNT(CASE WHEN c.trend = 'MOVE_UP' THEN 1 END) AS up,
+            COUNT(CASE WHEN c.trend = 'MOVE_DOWN' THEN 1 END) AS down
+        FROM charturl ch
+        JOIN chartmain c ON ch.url = c.url
+        GROUP BY ch.title
+    )
+    SELECT
+        title,
+        (COALESCE(up, 0) - COALESCE(down, 0)) AS improved
+    FROM TrendCounts
+    ORDER BY improved DESC
+    LIMIT $1
   `;
 
   pool.query(query, [limit], (err, data) => {
