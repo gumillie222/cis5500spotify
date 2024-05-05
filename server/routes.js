@@ -6,19 +6,10 @@ const { Pool } = require('pg');
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0
 
 const pool = new Pool(config);
-
 config.poolLimit = 10;
-//var pool = mysql.createPool(config);
 
 const { searchSpotifyForArtistByTitle } = require('./spotify-auth');
 
-// First, create the index
-/*pool.query('CREATE INDEX idx_chart_rank ON Chart_small(chart_rank);', (err, result) => {
-  if (err) {
-    console.error('Error creating index:', err);
-    return;
-  }
-  console.log('Index created successfully')});*/
 
 // Create a new column on concert to contain the artist name
 // pool.query('ALTER TABLE Concert ADD COLUMN artist VARCHAR(255);')
@@ -152,7 +143,7 @@ const getAirbnb = async function (req, res) {
   var chartRank = parseInt(req.query.chart_rank) || 10;
 
   pool.query(`
-    SELECT DISTINCT *
+    SELECT DISTINCT a.name, concertaddr.city, a.price, c.title, c.artist
     FROM airbnbmain a
     JOIN airbnbhost ON a.host_id = airbnbhost.host_id
     JOIN concertaddr ON a.city = concertaddr.city
