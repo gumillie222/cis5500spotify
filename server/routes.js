@@ -369,19 +369,19 @@ const getMonthPopularity = async function (req, res) {
 }
 
 // get /events_and_accommodations -- WORKS
-// {"city":"New York City","event_category":"MUSIC","numAirbnb":42919}
 const getEventsAccomodations = async function (req, res) {
 
-  const city = req.query.city || 'Los Angeles';
+  const limit = parseInt(req.query.limit) || 10;
 
   const query = `
-    SELECT mpec.event_subcategory, mpec.event_count, ac.numAirbnb
+    SELECT ac.city, mpec.event_subcategory, mpec.event_count, ac.numAirbnb
     FROM MostPopularEventCategory mpec
     JOIN AirbnbCount ac ON mpec.city = ac.city
-    WHERE ac.city iLIKE $1;
+    ORDER BY event_count DESC, numairbnb DESC
+    LIMIT $1;
   `;
 
-  pool.query(query, [`${city}`], (err, data) => {
+  pool.query(query, [`${limit}`], (err, data) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ error: "Internal server error" });
