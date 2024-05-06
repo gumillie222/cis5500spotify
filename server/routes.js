@@ -84,16 +84,13 @@ const topCities = async function (req, res) {
   pool.query(`
     SELECT c.city
     FROM (SELECT city, artist
-      FROM ConcertMain cm
-      JOIN ConcertAddr ca
+      FROM ConcertMain cm JOIN ConcertAddr ca
       ON ca.formatted_address = cm.formatted_address) c
-    INNER JOIN (SELECT cu.artist
-      FROM ChartMain chm
-      JOIN charturl cu ON chm.url = cu.url) ch
-    ON c.artist = ch.artist
+    INNER JOIN ChartMain chm
+    ON c.artist = chm.artist
     GROUP BY c.city
     ORDER BY COUNT(*) DESC
-    LIMIT ${limit}
+    LIMIT ${limit};
 `, (err, data) => {
     if (err || data.length === 0) {
       console.log(err);
@@ -303,11 +300,17 @@ const getAvgAirbnbPrice = async function (req, res) {
 
   const query = `
     SELECT a.city, a.room_type, AVG(a.price) AS price
-    FROM airbnbmain a
+    FROM AirbnbMain a
+    WHERE EXISTS (
+      SELECT am.city
+      FROM AirbnbMain am JOIN ConcertAddr ca
+      ON am.city = ca.city
+      WHERE am.city = a.city
+    )
     GROUP BY a.city, a.room_type
-    HAVING AVG(a.price) > 0
+    HAVING COUNT(*) > 5
     ORDER BY AVG(a.price)
-    LIMIT ${limit}
+    LIMIT {limit};
 
   `;
 
