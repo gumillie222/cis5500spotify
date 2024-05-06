@@ -21,7 +21,11 @@ const GetEventsAccommodations = () => {
         <Container>
             <Box my={4}>
                 <Typography variant="h4" component="h2">
-                    Get a Popular Event's Category and the Number of Events and Accomodations Based on City
+                    Popular Event's Category, Event Count, and Accomodations Based on City
+                </Typography>
+                <Typography>
+                    Get the ranked most popular event subcategory, event count, and the number of 
+                    airbnbs offered in that city.
                 </Typography>
 
                 <Box display="flex" flexDirection="row" gap={2} my={2} flexWrap="nowrap">

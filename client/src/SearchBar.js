@@ -29,15 +29,14 @@ const SearchAndAutoFetch = () => {
 
             {/* Manual search fields */}
             <div>
-                <TopCities />
-
                 <TopArtists />
+                <TopCities />
+                <CitiesConcerts />
                 <GetAirbnb />
                 <Subcategories />
                 <ArtistsStateInitial />
                 <ConcertsAirbnbCount />
                 <GetavgAirbnbPrice />
-                <CitiesConcerts />
                 <MonthPopularity />
                 <EventsAccomodations />
                 <MostImproved />

@@ -20,6 +20,9 @@ const GetMonthPopularity = () => {
                 <Typography variant="h4" component="h2">
                     Get the Number of Concerts per Month for an Artist
                 </Typography>
+                <Typography>
+                    Get the most popular months to perform concerts by specified artist listed by order of popularity (number of concerts per month).
+                </Typography>
 
                 <Box my={2}>
                     <TextField

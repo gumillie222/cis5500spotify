@@ -23,6 +23,9 @@ const GetMostImproved = () => {
                 <Typography variant="h4" component="h2">
                     Get the Most Improved Songs
                 </Typography>
+                <Typography>
+                    Defined as the total number of times they moved up subtracted by the total number of times they moved down.
+                </Typography>
 
                 <Box my={2}>
                     <TextField

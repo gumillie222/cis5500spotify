@@ -37,6 +37,9 @@ const GetSubcategories = () => {
                 <Typography variant="h4" component="h2">
                     Get the Number of Events
                 </Typography>
+                <Typography>
+                    Get the subcategories and count of songs fulfilling a set of criteria in this subcategory in descending order.
+                </Typography>
 
                 <Box display="flex" flexDirection="row" gap={2} my={2} flexWrap="nowrap">
                     <TextField

@@ -23,6 +23,9 @@ const GetavgAirbnbPrice = () => {
                 <Typography variant="h4" component="h2">
                     Get Average Airbnb Price
                 </Typography>
+                <Typography>
+                If a city hosts any concert in the past and has at least 5 airbnbs listings, average their price by room type and city, and display them in descending order.
+                </Typography>
 
                 <Box my={2}>
                     <TextField
