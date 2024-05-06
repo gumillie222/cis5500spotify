@@ -273,11 +273,11 @@ const getConcertsAirbnbCount = async function (req, res) {
       FROM airbnbmain a
       GROUP BY a.city
     )
-    SELECT DISTINCT c.title, c.day, c.month, c.year, c.time, n.num
+    SELECT DISTINCT c.title, c.day, c.month, c.year, n.num
     FROM concertmain c
     JOIN concertaddr ca ON c.formatted_address = ca.formatted_address
     JOIN numAirbnb n ON ca.city = n.city
-    ORDER BY c.year, c.month, c.day, c.time
+    ORDER BY c.year DESC, c.month DESC, c.day DESC
     LIMIT ${limit}
   `;
 
