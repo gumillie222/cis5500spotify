@@ -360,7 +360,7 @@ const getMonthPopularity = async function (req, res) {
     SELECT ch.artist, c.month, COUNT(c.event_id) AS concert_count
     FROM concertmain c
     JOIN charturl ch ON c.artist  = ch.artist
-    WHERE ch.artist LIKE $1
+    WHERE ch.artist iLIKE $1
     GROUP BY c.month, ch.artist
     ORDER BY concert_count DESC;
   `;
@@ -459,7 +459,7 @@ const getMostImprovedSongs = async function (req, res) {
   */
   const query = `
   SELECT title, improved FROM tc
-  LIMIT 10;
+  LIMIT $1;
   `;
 
   pool.query(query, [limit], (err, data) => {
