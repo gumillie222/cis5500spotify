@@ -70,7 +70,7 @@ LIMIT 1000;
     if (data.rows.length === 0) {
       return res.status(200).json({ message: "No data found for the given parameters." });
     }
-    res.status(200).json(data.rows);
+    return res.status(200).json(data.rows);
   });
 
 }
@@ -94,9 +94,9 @@ const topCities = async function (req, res) {
 `, (err, data) => {
     if (err || data.length === 0) {
       console.log(err);
-      res.status(200).json({ message: "Query did not return any results." });
+      return res.status(200).json({ message: "Query did not return any results." });
     } else {
-      res.json(data.rows);
+      return res.status(200).json(data.rows);
     }
   });
 }
@@ -124,9 +124,9 @@ const topArtists = async function (req, res) {
   `, (err, data) => {
     if (err || data.length === 0) {
       console.log(err);
-      res.status(200).json({ message: "Query did not return any results." });
+      return res.status(200).json({ message: "Query did not return any results." });
     } else {
-      res.status(200).json(data.rows);
+      return res.status(200).json(data.rows);
     }
   });
 }
@@ -159,9 +159,9 @@ const getAirbnb = async function (req, res) {
       return res.status(500).json({ error: "Internal server error" });
     }
     if (data.length === 0) {
-      res.status(200).json({ message: "Query did not return any results." });
+      return res.status(200).json({ message: "Query did not return any results." });
     }
-    res.status(200).json(data.rows);
+    return res.status(200).json(data.rows);
   });
 }
 
@@ -226,9 +226,9 @@ const getSubcategories = async function (req, res) {
       return res.status(500).json({ error: "Internal server error" });
     }
     if (data.length === 0) {
-      res.status(200).json({ message: "Query did not return any results." });
+      return res.status(200).json({ message: "Query did not return any results." });
     }
-    res.status(200).json(data.rows);
+    return res.status(200).json(data.rows);
   });
 }
 
@@ -256,9 +256,9 @@ const getArtistsStateInitial = async function (req, res) {
       return res.status(500).json({ error: "Internal server error" });
     }
     if (data.length === 0) {
-      res.status(200).json({ message: "Query did not return any results." });
+      return res.status(200).json({ message: "Query did not return any results." });
     }
-    res.status(200).json(data.rows);
+    return res.status(200).json(data.rows);
   });
 }
 
@@ -287,9 +287,9 @@ const getConcertsAirbnbCount = async function (req, res) {
       return res.status(500).json({ error: "Internal server error" });
     }
     if (data.length === 0) {
-      res.status(200).json({ message: "Query did not return any results." });
+      return res.status(200).json({ message: "Query did not return any results." });
     }
-    res.status(200).json(data.rows);
+    return res.status(200).json(data.rows);
   });
 }
 
@@ -319,9 +319,9 @@ const getAvgAirbnbPrice = async function (req, res) {
       return res.status(500).json({ error: "Internal server error" });
     }
     if (data.length === 0) {
-      res.status(200).json({ message: "Query did not return any results." });
+      return res.status(200).json({ message: "Query did not return any results." });
     }
-    res.status(200).json(data.rows);
+    return res.status(200).json(data.rows);
   });
 }
 
@@ -346,9 +346,9 @@ const getCitiesBasedOnConcerts = async function (req, res) {
       return res.status(500).json({ error: "Internal server error" });
     }
     if (data.rows.length === 0) {
-      res.status(200).json({ message: "Query did not return any results." });
+      return res.status(200).json({ message: "Query did not return any results." });
     }
-    res.status(200).json(data.rows);
+    return res.status(200).json(data.rows);
   });
 }
 
@@ -371,9 +371,9 @@ const getMonthPopularity = async function (req, res) {
       return res.status(500).json({ error: "Internal server error" });
     }
     if (data.rows.length === 0) {
-      res.status(200).json({ message: "Query did not return any results." });
+      return res.status(200).json({ message: "Query did not return any results." });
     }
-    res.status(200).json(data.rows);
+    return res.status(200).json(data.rows);
   });
 }
 
@@ -468,9 +468,9 @@ const getMostImprovedSongs = async function (req, res) {
       return res.status(500).json({ error: "Internal server error" });
     }
     if (data.rows.length === 0) {
-      res.status(200).json({ message: "Query did not return any results." });
+      return res.status(200).json({ message: "Query did not return any results." });
     }
-    res.status(200).json(data.rows);
+    return res.status(200).json(data.rows);
   });
 }
 
@@ -493,13 +493,13 @@ LIMIT $1;
       return res.status(500).json({ error: "Internal server error" });
     }
     if (data.length === 0) {
-      res.status(200).json({ message: "Query did not return any results." });
+      return res.status(200).json({ message: "Query did not return any results." });
     }
     const formattedData = data.rows.map(row => ({
       neighborhood: row.neighborhood,
       average_price: parseFloat(row.price.toFixed(2)) // Formatting the price to two decimal places
     }));
-    res.status(200).json(formattedData);
+    return res.status(200).json(formattedData);
   });
 }
 
