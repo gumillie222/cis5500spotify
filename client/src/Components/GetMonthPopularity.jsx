@@ -1,18 +1,35 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { TextField, Button, Container, Typography, Box,
+import {
+    TextField, Button, Container, Typography, Box,
     Table, TableBody, TableCell, TableContainer,
-    TableHead, TableRow, Paper } from '@mui/material';
+    TableHead, TableRow, Paper
+} from '@mui/material';
 
 
 const GetMonthPopularity = () => {
     const [results, setResults] = useState([]);
     const [artist, setArtist] = useState('');
+    const [message, setMessage] = useState('');
+
 
     const search = async () => {
-        const res = await axios.get(`http://localhost:8081/month_popularity?artist=${artist}`);
-        setResults(res.data);
+        try {
+            const res = await axios.get(`http://localhost:8081/month_popularity?artist=${artist}`);
+            if (res.data.message) {
+                setMessage(res.data.message);
+                setResults([]); // Clear results as there's only a message
+            } else {
+                setResults(res.data);
+                setMessage(''); // Clear any previous messages
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setMessage('Failed to fetch data');
+            setResults([]); // Ensure no stale data remains
+        }
     };
+
 
     return (
         <Container>
@@ -63,18 +80,19 @@ const GetMonthPopularity = () => {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={2}>
-                                        <Typography>Waiting for query result...</Typography>
+                                    <TableCell colSpan={3}>
+                                        <Typography>{message || "Waiting for query result..."}</Typography>
                                     </TableCell>
                                 </TableRow>
                             )}
                         </TableBody>
+
                     </Table>
                 </TableContainer>
-                
+
             </Box>
         </Container>
-        
+
     );
 
 }
