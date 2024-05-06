@@ -22,6 +22,11 @@ const GetArtistsInitial = () => {
                 <Typography variant="h4" component="h2">
                     Get Artists Performing in a State
                 </Typography>
+                <Typography>
+                Takes in an artist’s initial letter(s) as well as a specific state, finds all of the possible names of artists and 
+                their songs from the Spotify charts (in alphabetical order), and counts the number of potential Airbnb’s in the 
+                cities of the given state.
+                </Typography>
 
                 <Box display="flex" flexDirection="row" gap={2} my={2} flexWrap="nowrap">
                     <TextField

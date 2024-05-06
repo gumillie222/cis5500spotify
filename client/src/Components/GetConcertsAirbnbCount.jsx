@@ -21,6 +21,9 @@ const GetConcertsAirbnbCount = () => {
                 <Typography variant="h4" component="h2">
                     Get Concerts and Number of Surrounding Airbnbs
                 </Typography>
+                <Typography>
+                    Find all concerts sorted by earliest to latest date and the number of airbnb’s in the same city.
+                </Typography>
 
                 <Box my={2}>
                     <TextField
@@ -49,7 +52,6 @@ const GetConcertsAirbnbCount = () => {
                                 <TableCell>Day</TableCell>
                                 <TableCell>Month</TableCell>
                                 <TableCell>Year</TableCell>
-                                <TableCell>Time</TableCell>
                                 <TableCell>Number of Airbnbs</TableCell>
                             </TableRow>
                         </TableHead>
@@ -61,7 +63,6 @@ const GetConcertsAirbnbCount = () => {
                                         <TableCell>{result.day}</TableCell>
                                         <TableCell>{result.month}</TableCell>
                                         <TableCell>{result.year}</TableCell>
-                                        <TableCell>{result.time}</TableCell>
                                         <TableCell>{result.num}</TableCell>
                                     </TableRow>
                                 ))

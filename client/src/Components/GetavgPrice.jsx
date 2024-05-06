@@ -18,6 +18,12 @@ const AvgPrice = () => {
     return (
         <Container>
             <Box my={4}>
+                <Typography variant="h4" component="h2">
+                    Get Average Price by Neighborhood
+                </Typography>
+                <Typography>
+                    Rank all the neighborhoods with descending average prices for airbnbs.
+                </Typography>
                 <Box my={2}>
                     <TextField
                         label="Set Number of Results"

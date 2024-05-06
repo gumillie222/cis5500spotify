@@ -31,6 +31,10 @@ const GetAirbnb = () => {
                 <Typography variant="h4" component="h2">
                     Get Airbnbs in Cities Where Top Artists Have Performed
                 </Typography>
+                <Typography>
+                    Get the airbnb name, city, price, and the concert’s title and artist, given specified number of reviews, 
+                    min and max price of airbnbs, and the chart rank for any of the artist’s songs on Spotify chart.
+                </Typography>
 
                 <Box display="flex" flexDirection="row" gap={2} my={2}>
                     <TextField

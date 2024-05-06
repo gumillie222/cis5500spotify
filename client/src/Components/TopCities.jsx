@@ -15,7 +15,10 @@ const TopCities = () => {
         <Container>
             <Box my={4}>
                 <Typography variant="h4" component="h2">
-                    Get Top Cities
+                    Top Cities By Artist
+                </Typography>
+                <Typography>
+                    Rank the cities on the number of popular artists it has hosted and list the top ones. Here, popular artists is defined as any artist that has appeared on Spotify “Top 200” charts since January 1, 2017.
                 </Typography>
 
                 <Box my={2}>

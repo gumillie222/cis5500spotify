@@ -21,7 +21,11 @@ const GetCitiesConcerts = () => {
         <Container>
             <Box my={4}>
                 <Typography variant="h4" component="h2">
-                    Gets the number of events in subcategory fulfiling criteria
+                    Top Cities by Concert
+                </Typography>
+                <Typography>
+                    Identify the top cities based on the number of concerts hosted artists 
+                    that appeared on Spotify “Top 200” charts since January 1, 2017.
                 </Typography>
 
                 <Box my={2}>

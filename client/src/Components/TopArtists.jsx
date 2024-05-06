@@ -18,6 +18,9 @@ const TopArtists = () => {
                 <Typography variant="h4" component="h2">
                     Get Top Artists
                 </Typography>
+                <Typography>
+                Rank the top artists who have been in top specified ranks of Spotify’s “Top 200” chart with the highest cumulative streams.
+                </Typography>
 
                 <Box display="flex" flexDirection="row" gap={2} my={2}>
                     <TextField
