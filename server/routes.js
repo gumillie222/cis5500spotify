@@ -8,10 +8,10 @@ process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0
 const pool = new Pool(config);
 config.poolLimit = 10;
 
-const { searchSpotifyForArtistByTitle } = require('./spotify-auth');
 
-
-// Create a new column on concert to contain the artist name
+// Use Spotify API, create a new column on concert to contain the artist name
+// In case there are any updates in the concert database, this needs to be run again
+// const { searchSpotifyForArtistByTitle } = require('./spotify-auth');
 // pool.query('ALTER TABLE Concert ADD COLUMN artist VARCHAR(255);')
 // pool.query(`SELECT title FROM Concert 
 //                 WHERE artist IS NULL AND event_category = "MUSIC"`, async (err, results) => {
@@ -75,7 +75,7 @@ LIMIT 1000;
 
 }
 
-// get /top_cities - WORKS
+// get /top_cities 
 const topCities = async function (req, res) {
   var limit = parseInt(req.query.limit);
   if (isNaN(limit) || limit < 1) {
@@ -104,7 +104,7 @@ const topCities = async function (req, res) {
   });
 }
 
-// get /top_artists - WORKS
+// get /top_artists
 const topArtists = async function (req, res) {
   var limit = parseInt(req.query.limit);
   var position = parseInt(req.query.position);
@@ -135,7 +135,7 @@ const topArtists = async function (req, res) {
 }
 
 
-//get /airbnb - WORK
+//get /airbnb 
 const getAirbnb = async function (req, res) {
   var priceMin = parseInt(req.query.price_min) || 0;
   var priceMax = parseInt(req.query.price_max) || 2000;
@@ -170,8 +170,7 @@ const getAirbnb = async function (req, res) {
 
 
 
-// get /subcategories - WORKS
-// {"event_subcategory":"HIP-HOP/RAP","count":91} 
+// get /subcategories 
 const getSubcategories = async function (req, res) {
   const rank = parseInt(req.query.rank) || 10;
   const times = parseInt(req.query.times) || 2;
@@ -181,6 +180,18 @@ const getSubcategories = async function (req, res) {
   const maxPrice = parseInt(req.query.max_price) || 300;
   const minNights = parseInt(req.query.min_nights) || 3;
 
+  /* commented out because these only need to be executed once in database
+  CREATE INDEX idx_airbnbmain_host_id ON airbnbmain(host_id);
+  CREATE INDEX idx_airbnbhost_host_id ON airbnbhost(host_id);
+  CREATE INDEX idx_concertaddr_city ON concertaddr(city);
+  CREATE INDEX idx_airbnbmain_city ON airbnbmain(city);
+  CREATE INDEX idx_concertaddr_formatted_address ON concertaddr(formatted_address);
+  CREATE INDEX idx_concertmain_formatted_address ON concertmain(formatted_address);
+  CREATE INDEX idx_chartmain_url ON chartmain(url);
+  CREATE INDEX idx_charturl_url ON charturl(url);
+  CREATE INDEX idx_chartmain_chart_rank ON chartmain(chart_rank);
+  CREATE INDEX idx_airbnbmain_price_numreviews ON airbnbmain(price, number_of_reviews);
+   */
   pool.query(`
   WITH temp AS (
     (SELECT ch.artist
@@ -224,7 +235,7 @@ const getSubcategories = async function (req, res) {
   });
 }
 
-// get /artists_by_state_initial -- WORK
+// get /artists_by_state_initial
 const getArtistsStateInitial = async function (req, res) {
 
   const state = req.query.state || 'CA';
@@ -255,7 +266,6 @@ const getArtistsStateInitial = async function (req, res) {
 }
 
 // get /concerts_airbnb_count
-// {"title":"Coors Field Event Parking","datetime_utc":"2023-08-02T04:00:00.000Z","num":5362}
 const getConcertsAirbnbCount = async function (req, res) {
 
   const limit = parseInt(req.query.limit) || 100;
@@ -287,7 +297,6 @@ const getConcertsAirbnbCount = async function (req, res) {
 }
 
 // get /avg_airbnb_price
-// {"city":"Oakland","room_type":"Shared room","price":33.5625}
 const getAvgAirbnbPrice = async function (req, res) {
 
   const limit = parseInt(req.query.limit) || 100;
@@ -314,8 +323,7 @@ const getAvgAirbnbPrice = async function (req, res) {
   });
 }
 
-// get /top_cities_on_concerts -- WORKS, TOOK A WHILE
-// {"city":"Inglewood","concert_count":5590}
+// get /top_cities_on_concerts
 const getCitiesBasedOnConcerts = async function (req, res) {
 
   const limit = parseInt(req.query.limit) || 100;
@@ -342,8 +350,7 @@ const getCitiesBasedOnConcerts = async function (req, res) {
   });
 }
 
-// get /month_popularity -- WORKS, but suspicious answer (not suspicious but just because not enough data)
-// {"month":"8","concert_count":3580}
+// get /month_popularity
 const getMonthPopularity = async function (req, res) {
   const artist = req.query.artist || 'Taylor Swift';
 
@@ -368,11 +375,38 @@ const getMonthPopularity = async function (req, res) {
   });
 }
 
-// get /events_and_accommodations -- WORKS
+// get /events_and_accommodations
 const getEventsAccomodations = async function (req, res) {
 
   const limit = parseInt(req.query.limit) || 10;
 
+  /* commented out because these only need to be executed once in database
+  CREATE MATERIALIZED VIEW EventCounts AS
+  SELECT
+    ca.city,
+    c.event_subcategory,
+    COUNT(c.event_id) AS event_count,
+    ROW_NUMBER() OVER (
+        PARTITION BY ca.city
+        ORDER BY COUNT(c.event_id) DESC
+    ) AS rank
+  FROM concertmain c
+  JOIN concertaddr ca
+  ON c.formatted_address = ca.formatted_address
+  GROUP BY ca.city, c.event_subcategory;
+  CREATE MATERIALIZED VIEW AirbnbCount AS
+  SELECT
+    a.city AS city,
+    COUNT(a.id) AS numAirbnb
+  FROM airbnbmain a
+  GROUP BY a.city;
+  CREATE MATERIALIZED VIEW MostPopularEventCategory AS
+  SELECT city, event_subcategory, event_count
+  FROM EventCounts
+  WHERE rank <= 5;
+  CREATE INDEX idx_mpec_city ON MostPopularEventCategory(city);
+  CREATE INDEX idx_ac_city ON AirbnbCount(city);
+  */
   const query = `
     SELECT ac.city, mpec.event_subcategory, mpec.event_count, ac.numAirbnb
     FROM MostPopularEventCategory mpec
@@ -394,29 +428,36 @@ const getEventsAccomodations = async function (req, res) {
 
 }
 
-// get /most_improved_songs -- WORKS
-// {"title":"'Till I Collapse","improved":39}
+// get /most_improved_songs
 const getMostImprovedSongs = async function (req, res) {
 
-  //  const year = req.query.year || '2017';
   const limit = parseInt(req.query.limit) || 10;
 
+  /* commented out because these only need to be executed once in database
+  CREATE INDEX idx_charturl_title ON charturl(title);
+  CREATE INDEX idx_charturl_url ON charturl(url);
+  CREATE INDEX idx_chartmain_url ON chartmain(url);
+  
+  CREATE MATERIALIZED VIEW tc AS (
+      WITH TrendCounts AS (
+      SELECT
+          ch.title,
+          COUNT(CASE WHEN c.trend = 'MOVE_UP' THEN 1 END) AS up,
+          COUNT(CASE WHEN c.trend = 'MOVE_DOWN' THEN 1 END) AS down
+      FROM charturl ch
+      JOIN chartmain c ON ch.url = c.url
+      GROUP BY ch.title
+      )
+      SELECT
+          title,
+          (COALESCE(up, 0) - COALESCE(down, 0)) AS improved
+      FROM TrendCounts
+      ORDER BY improved DESC
+      ); 
+  */
   const query = `
-    WITH TrendCounts AS (
-        SELECT
-            ch.title,
-            COUNT(CASE WHEN c.trend = 'MOVE_UP' THEN 1 END) AS up,
-            COUNT(CASE WHEN c.trend = 'MOVE_DOWN' THEN 1 END) AS down
-        FROM charturl ch
-        JOIN chartmain c ON ch.url = c.url
-        GROUP BY ch.title
-    )
-    SELECT
-        title,
-        (COALESCE(up, 0) - COALESCE(down, 0)) AS improved
-    FROM TrendCounts
-    ORDER BY improved DESC
-    LIMIT $1
+  SELECT title, improved FROM tc
+  LIMIT 10;
   `;
 
   pool.query(query, [limit], (err, data) => {
@@ -432,7 +473,6 @@ const getMostImprovedSongs = async function (req, res) {
 }
 
 // get /average_prices - WORKS
-// {"neighborhood":"Lauderdale By The Sea","average_price":364.21}
 const getAveragePrice = async function (req, res) {
 
   const limit = parseInt(req.query.limit) || 100;
