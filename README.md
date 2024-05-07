@@ -16,8 +16,7 @@ As for our web application, we developed 2 pages:
 To be updated as we develop
 This page showcases all of the Airbnbs that are available to us in the US, as well as another search page, which allows our users to discover useful information about concerts, viral artists and accommodation(Airbnb’s) in a consolidated manner. 
 For our map page, we utilized the Google Maps API to visually pinpoint the location of all of the Airbnbs, where if the user desires to see the names of these places, they can simply click on one of the pins and all of the names appear (and if they click off, they disappear). There is also a search feature where if they input a name that corresponds to an Airbnb, then the listings will continue to show as the Airbnb desired is valid. Else, no pins show up. When you click the restart button, the pins restart to its original state, which is appearing on the Google Maps with no name shown.
-
-### search bar
+#### search bar
 For our search page, there are numerous sections for people to input specific values into text boxes. After inputting their desired values, the results then show up below in an organized fashion, with the results tailored to their preferred settings. 
 
 ## Dataset Description
