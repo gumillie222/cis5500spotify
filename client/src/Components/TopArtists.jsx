@@ -6,11 +6,26 @@ const TopArtists = () => {
     const [results, setResults] = useState([]);
     const [limit, setLimit] = useState('');
     const [pos, setPos] = useState('');
+    const [message, setMessage] = useState('');
+
 
     const search = async () => {
-        const res = await axios.get(`http://localhost:8081/top_artists?limit=${limit}&position=${pos}`);
-        setResults(res.data);
+        try {
+            const res = await axios.get(`http://localhost:8081/top_artists?limit=${limit}&position=${pos}`);
+            if (res.data.message) {
+                setMessage(res.data.message);
+                setResults([]);
+            } else {
+                setResults(res.data);
+                setMessage('');
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setMessage('Failed to fetch data');
+            setResults([]);
+        }
     };
+
 
     return (
         <Container>
@@ -19,7 +34,7 @@ const TopArtists = () => {
                     Get Top Artists
                 </Typography>
                 <Typography>
-                Rank the top artists who have been in top specified ranks of Spotify’s “Top 200” chart with the highest cumulative streams.
+                    Rank the top artists who have been in top specified ranks of Spotify’s “Top 200” chart with the highest cumulative streams.
                 </Typography>
 
                 <Box display="flex" flexDirection="row" gap={2} my={2}>
@@ -57,9 +72,10 @@ const TopArtists = () => {
                             ))}
                         </List>
                     ) : (
-                        <Typography>waiting for query results…</Typography>
+                        <Typography>{message || 'Waiting for query results…'}</Typography>
                     )}
                 </Box>
+
             </Box>
         </Container>
     );

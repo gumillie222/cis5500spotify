@@ -15,20 +15,33 @@ const GetSubcategories = () => {
     const [priceMin, setPriceMin] = useState('');
     const [priceMax, setPriceMax] = useState('');
     const [nightsMin, setNightsMin] = useState('');
+    const [message, setMessage] = useState('Waiting for query results…');
 
     const search = async () => {
-        const res = await axios.get(`http://localhost:8081/subcategories`, {
-            params: {
-                rank,
-                times,
-                streams,
-                num_airbnb: airbnb,
-                min_price: priceMin,
-                max_price: priceMax,
-                min_nights: nightsMin,
+        try {
+            const res = await axios.get(`http://localhost:8081/subcategories`, {
+                params: {
+                    rank,
+                    times,
+                    streams,
+                    num_airbnb: airbnb,
+                    min_price: priceMin,
+                    max_price: priceMax,
+                    min_nights: nightsMin,
+                }
+            });
+            if (res.data.message) {
+                setMessage(res.data.message);
+                setResults([]);
+            } else {
+                setResults(res.data);
+                setMessage('');
             }
-        });
-        setResults(res.data);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setMessage('Failed to fetch data');
+            setResults([]);
+        }
     };
 
     return (
@@ -77,16 +90,13 @@ const GetSubcategories = () => {
                         value={nightsMin}
                         onChange={(e) => setNightsMin(e.target.value)}
                     />
-
                 </Box>
-
 
                 <Box my={2}>
                     <Button variant="contained" color="primary" onClick={search} fullWidth>
                         Search
                     </Button>
                 </Box>
-
 
                 <Typography variant="h5" component="h3">
                     Search Results
@@ -111,7 +121,7 @@ const GetSubcategories = () => {
                             ) : (
                                 <TableRow>
                                     <TableCell colSpan={2}>
-                                        <Typography>waiting for query results…</Typography>
+                                        <Typography>{message}</Typography>
                                     </TableCell>
                                 </TableRow>
                             )}
