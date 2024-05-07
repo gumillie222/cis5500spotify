@@ -10,10 +10,23 @@ const GetArtistsInitial = () => {
     const [results, setResults] = useState([]);
     const [prefix, setPrefix] = useState('');
     const [state, setState] = useState('');
+    const [message, setMessage] = useState('Waiting for query results…');
 
     const search = async () => {
-        const res = await axios.get(`http://localhost:8081/artists_by_state_initial?state=${state}&artistPrefix=${prefix}`);
-        setResults(res.data);
+        try {
+            const res = await axios.get(`http://localhost:8081/artists_by_state_initial?state=${state}&artistPrefix=${prefix}`);
+            if (res.data.message) {
+                setMessage(res.data.message);
+                setResults([]);
+            } else {
+                setResults(res.data);
+                setMessage('');
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setMessage('Failed to fetch data');
+            setResults([]);
+        }
     };
 
     return (
@@ -23,9 +36,9 @@ const GetArtistsInitial = () => {
                     Get Artists Performing in a State
                 </Typography>
                 <Typography>
-                Takes in an artist’s initial letter(s) as well as a specific state, finds all of the possible names of artists and 
-                their songs from the Spotify charts (in alphabetical order), and counts the number of potential Airbnb’s in the 
-                cities of the given state.
+                    Takes in an artist’s initial letter(s) as well as a specific state, finds all of the possible names of artists and
+                    their songs from the Spotify charts (in alphabetical order), and counts the number of potential Airbnb’s in the
+                    cities of the given state.
                 </Typography>
 
                 <Box display="flex" flexDirection="row" gap={2} my={2} flexWrap="nowrap">
@@ -41,7 +54,6 @@ const GetArtistsInitial = () => {
                         onChange={(e) => setState(e.target.value)}
                         fullWidth
                     />
-
                 </Box>
 
                 <Box my={2}>
@@ -75,7 +87,7 @@ const GetArtistsInitial = () => {
                             ) : (
                                 <TableRow>
                                     <TableCell colSpan={3}>
-                                        <Typography>waiting for query results…</Typography>
+                                        <Typography>{message}</Typography>
                                     </TableCell>
                                 </TableRow>
                             )}
