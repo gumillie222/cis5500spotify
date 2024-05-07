@@ -59,8 +59,8 @@ const getLatitudeLongitude = async function (req, res) {
 
   const query = `
     SELECT latitude, longitude, name
-FROM airbnblatlong a1 JOIN airbnbmain a ON a1.id = a.id
-LIMIT 1000;
+    FROM airbnblatlong a1 JOIN airbnbmain a ON a1.id = a.id
+    LIMIT 1000;
   `
   pool.query(query, (err, data) => {
     if (err) {
@@ -81,15 +81,25 @@ const topCities = async function (req, res) {
   if (isNaN(limit) || limit < 1) {
     limit = 10;
   }
+  /* commented out because these only need to be executed once in database
+  CREATE INDEX idx_cm_fa ON ConcertMain(formatted_address);
+  CREATE INDEX idx_ca_fa ON ConcertAddr(formatted_address);
+  CREATE INDEX idx_cm_artist ON ConcertMain(artist);
+  CREATE INDEX idx_chm_artist ON ChartMain(artist);
+  CREATE MATERIALIZED VIEW TopCityByArtist AS (
+      SELECT c.city
+      FROM (SELECT city, artist
+        FROM ConcertMain cm JOIN ConcertAddr ca
+        ON ca.formatted_address = cm.formatted_address) c
+      INNER JOIN ChartMain chm
+      ON c.artist = chm.artist
+      GROUP BY c.city
+      ORDER BY COUNT(DISTINCT chm.artist) DESC
+      );
+  */
   pool.query(`
-    SELECT c.city
-    FROM (SELECT city, artist
-      FROM ConcertMain cm JOIN ConcertAddr ca
-      ON ca.formatted_address = cm.formatted_address) c
-    INNER JOIN ChartMain chm
-    ON c.artist = chm.artist
-    GROUP BY c.city
-    ORDER BY COUNT(*) DESC
+    SELECT *
+    FROM TopCityByArtist
     LIMIT ${limit};
 `, (err, data) => {
     if (err || data.length === 0) {
@@ -331,7 +341,7 @@ const getCitiesBasedOnConcerts = async function (req, res) {
   const limit = parseInt(req.query.limit) || 100;
 
   const query = `
-    SELECT ca.city, COUNT(c.event_id) AS concert_count
+    SELECT ca.city, COUNT(DISTINCT c.event_id) AS concert_count
     FROM concertmain c
     JOIN concertaddr ca ON c.formatted_address = ca.formatted_address
     JOIN charturl ch ON c.artist  = ch.artist
@@ -357,7 +367,7 @@ const getMonthPopularity = async function (req, res) {
   const artist = req.query.artist || 'Taylor Swift';
 
   const query = `
-    SELECT ch.artist, c.month, COUNT(c.event_id) AS concert_count
+    SELECT ch.artist, c.month, COUNT(DISTINCT c.event_id) AS concert_count
     FROM concertmain c
     JOIN charturl ch ON c.artist  = ch.artist
     WHERE ch.artist iLIKE $1
