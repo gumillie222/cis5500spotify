@@ -1,18 +1,27 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { TextField, Button, Container, Typography, Box,
-    Table, TableBody, TableCell, TableContainer,
-    TableHead, TableRow, Paper } from '@mui/material';
-
-//{"neighborhood":"West Compton","average_price":11354.38}
+import { TextField, Button, Container, Typography, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 
 const AvgPrice = () => {
     const [results, setResults] = useState([]);
     const [limit, setLimit] = useState('');
+    const [message, setMessage] = useState('Waiting for query results…');
 
     const search = async () => {
-        const res = await axios.get(`http://localhost:8081/average_prices?limit=${limit}`);
-        setResults(res.data);
+        try {
+            const res = await axios.get(`http://localhost:8081/average_prices?limit=${limit}`);
+            if (res.data.message) {
+                setMessage(res.data.message);
+                setResults([]);
+            } else {
+                setResults(res.data);
+                setMessage('');
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setMessage('Failed to fetch data');
+            setResults([]);
+        }
     };
 
     return (
@@ -39,7 +48,6 @@ const AvgPrice = () => {
                     </Button>
                 </Box>
 
-
                 <Typography variant="h5" component="h3">
                     Search Results
                 </Typography>
@@ -57,13 +65,13 @@ const AvgPrice = () => {
                                 results.map((result, index) => (
                                     <TableRow key={index}>
                                         <TableCell>{result.neighborhood}</TableCell>
-                                        <TableCell>{result.average_price}</TableCell>
+                                        <TableCell>${result.average_price.toFixed(2)}</TableCell>
                                     </TableRow>
                                 ))
                             ) : (
                                 <TableRow>
                                     <TableCell colSpan={2}>
-                                        <Typography>waiting for query results…</Typography>
+                                        <Typography>{message}</Typography>
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -73,7 +81,6 @@ const AvgPrice = () => {
             </Box>
         </Container>
     );
-
 }
 
 export default AvgPrice;

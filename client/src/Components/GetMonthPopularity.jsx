@@ -18,15 +18,15 @@ const GetMonthPopularity = () => {
             const res = await axios.get(`http://localhost:8081/month_popularity?artist=${artist}`);
             if (res.data.message) {
                 setMessage(res.data.message);
-                setResults([]); // Clear results as there's only a message
+                setResults([]);
             } else {
                 setResults(res.data);
-                setMessage(''); // Clear any previous messages
+                setMessage('');
             }
         } catch (error) {
             console.error('Error fetching data:', error);
             setMessage('Failed to fetch data');
-            setResults([]); // Ensure no stale data remains
+            setResults([]);
         }
     };
 
