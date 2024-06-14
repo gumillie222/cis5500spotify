@@ -1,4 +1,4 @@
-# cis5500spotify
+# SpotBNB
 
 ## Motivation & Vision 
 SpotBNB is designed to alleviate the complexities often associated with planning travel for concerts. The task of finding accommodations near event locations can be daunting, and the lack of consolidated information about concert venues, nearby lodgings, and artist details only compounds the challenge. SpotBNB addresses these issues head-on by seamlessly integrating information about concerts and accommodations into a single, user-friendly platform, where a user can find Airbnbs on our map or discover information through our search page. Our goal is to streamline the travel planning process for concert-goers, enabling them to easily access and compare concert and lodging options within the same city. This integration not only simplifies logistics but also enhances the overall experience of planning and enjoying a concert trip.
